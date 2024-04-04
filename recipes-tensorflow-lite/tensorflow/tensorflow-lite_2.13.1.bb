@@ -23,6 +23,8 @@ S = "${WORKDIR}/src"
 
 OECMAKE_SOURCEPATH = "${S}/tensorflow/lite/c"
 
+do_configure[network] = "1"
+
 do_configure:prepend() {
     mkdir -p ${WORKDIR}/build
     cd ${WORKDIR}/build
@@ -68,21 +70,15 @@ FILES_${PN}-dev += "${includedir}"
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""
 
+TFLITE_HEADERS="tensorflow/lite tensorflow/core/public tensorflow/core/platform tensorflow/core/lib tensorflow/lite/examples/label_image"
+
 do_install:append() {
 
-    local TFLITE_HEADERS=(\
-    "tensorflow/lite" \
-    "tensorflow/core/public" \
-    "tensorflow/core/platform" \
-    "tensorflow/core/lib" \
-    "tensorflow/lite/examples/label_image" \
-    )
-
-    for HPATH in ${TFLITE_HEADERS[@]};
+    for HPATH in ${TFLITE_HEADERS};
     do
-        install -d ${D}${includedir}/$HPATH
-        cd ${S}/$HPATH
-        cp --parents $(find . \( ! -name "*hexagon*" -name "*.h*" \)) ${D}${includedir}/$HPATH
+        install -d ${D}${includedir}/${HPATH}
+        cd ${S}/${HPATH}
+        cp --parents $(find . \( ! -name "*hexagon*" -name "*.h*" \)) ${D}${includedir}/${HPATH}
     done
 
     install -d ${D}${libdir}
