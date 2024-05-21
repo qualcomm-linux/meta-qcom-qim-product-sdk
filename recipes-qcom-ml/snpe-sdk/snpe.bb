@@ -1,3 +1,4 @@
+include ../qcom-ml.inc
 inherit autotools pkgconfig
 
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
@@ -6,20 +7,11 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f
 SUMMARY          = "SNPE-SDK"
 DESCRIPTION      = "Snapdragon Neural Processing Engine SDK"
 
-SNPE_DIR = "${DL_DIR}/snpe"
+SRC_URI[sha256sum] = "${QNPSDK_SRC_SHID}"
 
-do_fetch() {
-    if [ ! -d ${SNPE_DIR}/lib ]; then
-        if [ ! -f "/usr/bin/qpm-cli" ]; then
-            echo "QPM is not installed on host machine, Please try after QPM installation!!"
-            exit 1
-        fi
+SRC_URI = "https://softwarecenter.qualcomm.com/api/download/software/qualcomm_neural_processing_sdk/v${QNPSDK_SRC_VER}.zip"
 
-        mkdir -p ${SNPE_DIR}
-        /usr/bin/qpm-cli --license-activate qualcomm_neural_processing_sdk
-        yes y | /usr/bin/qpm-cli --extract qualcomm_neural_processing_sdk --version ${SNPE_VERSION} --path ${SNPE_DIR}
-    fi
-}
+SNPE_DIR = "${WORKDIR}/qairt/${QNPSDK_SRC_VER}"
 
 def platform_dir(d):
     gccversion  = d.getVar("GCCVERSION", True).strip('%').split('.')[0]
@@ -48,9 +40,11 @@ do_install() {
     install -d ${D}/${includedir}
     install -d ${D}/${libdir}/rfsa/adsp
 
-    install -m 0755 ${SNPE_DIR}/lib/${PLATFORM_DIR}/* ${D}/${libdir}
-    install -m 0755 ${SNPE_DIR}/bin/${PLATFORM_DIR}/* ${D}/${bindir}
-    install -m 0755 ${SNPE_DIR}/lib/${HEXAGON_DIR}/unsigned/* ${D}/${libdir}/rfsa/adsp
+    install -m 0755 ${SNPE_DIR}/lib/${PLATFORM_DIR}/*Snpe* ${D}/${libdir}
+    install -m 0755 ${SNPE_DIR}/lib/${PLATFORM_DIR}/libSNPE.so ${D}/${libdir}
+    install -m 0755 ${SNPE_DIR}/lib/${PLATFORM_DIR}/libhta_hexagon_runtime_snpe.so ${D}/${libdir}
+    install -m 0755 ${SNPE_DIR}/bin/${PLATFORM_DIR}/snpe* ${D}/${bindir}
+    install -m 0755 ${SNPE_DIR}/lib/${HEXAGON_DIR}/unsigned/libSnpe* ${D}/${libdir}/rfsa/adsp
 
     cp -r ${SNPE_DIR}/include/SNPE/* ${D}/${includedir}
     chmod -R 0755 ${D}/${includedir}

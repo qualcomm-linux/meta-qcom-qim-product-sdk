@@ -1,3 +1,4 @@
+include ../qcom-ml.inc
 inherit autotools pkgconfig
 
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
@@ -6,20 +7,11 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f
 SUMMARY          = "QNN-SDK"
 DESCRIPTION      = "Qualcomm Neural Network SDK"
 
-QNN_DIR = "${DL_DIR}/qnn"
+SRC_URI[sha256sum] = "${QNPSDK_SRC_SHID}"
 
-do_fetch() {
-    if [ ! -d ${QNN_DIR}/lib ]; then
-        if [ ! -f "/usr/bin/qpm-cli" ]; then
-            echo "QPM is not installed on host machine, Please try after QPM installation!!"
-            exit 1
-        fi
+SRC_URI = "https://softwarecenter.qualcomm.com/api/download/software/qualcomm_neural_processing_sdk/v${QNPSDK_SRC_VER}.zip"
 
-        mkdir -p ${QNN_DIR}
-        /usr/bin/qpm-cli --license-activate qualcomm_ai_engine_direct
-        yes y | /usr/bin/qpm-cli --extract qualcomm_ai_engine_direct --version ${QNN_VERSION} --path ${QNN_DIR}
-    fi
-}
+QNN_DIR = "${WORKDIR}/qairt/${QNPSDK_SRC_VER}"
 
 def platform_dir(d):
     gccversion  = d.getVar("GCCVERSION", True).strip('%').split('.')[0]
@@ -48,13 +40,16 @@ do_install() {
     install -d ${D}/${includedir}
     install -d ${D}/${libdir}/rfsa/adsp
 
-    install -m 0755 ${QNN_DIR}/lib/${PLATFORM_DIR}/* ${D}/${libdir}
-    install -m 0755 ${QNN_DIR}/bin/${PLATFORM_DIR}/* ${D}/${bindir}
-    install -m 0755 ${QNN_DIR}/lib/${HEXAGON_DIR}/unsigned/* ${D}/${libdir}/rfsa/adsp
+    install -m 0755 ${QNN_DIR}/lib/${PLATFORM_DIR}/*Qnn* ${D}/${libdir}
+    install -m 0755 ${QNN_DIR}/lib/${PLATFORM_DIR}/libPlatformValidatorShared.so ${D}/${libdir}
+    install -m 0755 ${QNN_DIR}/lib/${PLATFORM_DIR}/libcalculator.so ${D}/${libdir}
+    install -m 0755 ${QNN_DIR}/bin/${PLATFORM_DIR}/qnn* ${D}/${bindir}
+    install -m 0755 ${QNN_DIR}/bin/${PLATFORM_DIR}/qtld-net-run ${D}/${bindir}
+    install -m 0755 ${QNN_DIR}/lib/${HEXAGON_DIR}/unsigned/libQnn* ${D}/${libdir}/rfsa/adsp
+    install -m 0755 ${QNN_DIR}/lib/${HEXAGON_DIR}/unsigned/libCalculator_skel.so ${D}/${libdir}/rfsa/adsp
 
     cp -r ${QNN_DIR}/include/QNN/* ${D}/${includedir}
     chmod -R 0755 ${D}/${includedir}
-    rm -f ${D}/${libdir}/rfsa/adsp/libCalculator_skel.so
 }
 
 INHIBIT_PACKAGE_STRIP = "1"

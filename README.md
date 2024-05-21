@@ -26,17 +26,6 @@ The Qualcomm Intelligent Multimedia Product SDK consist of :
 - conf: has layer.conf with qimsdk/tflite/qnn/snpe layer specific configurations
 
 
-
-## Prerequisites
-
-Run the following commands to set up Qualcomm Package Manager:
-```shell
-sudo apt install curl
-curl -L https://softwarecenter.qualcomm.com/api/download/software/qsc/linux/latest.deb -o qsc_installer.deb
-sudo dpkg -i qsc_installer.deb
-qpm-cli --login
-```
-
 # How to sync and build the Qualcomm Intelligent Multimedia Product SDK
 
 ## Host Setup and Download the Yocto Project BSP
@@ -52,10 +41,10 @@ repo sync
 
 ## Examples
 
-To download the `qcom-6.6.17-QLI.1.0-Ver.1.4` release
+To download the `qcom-6.6.17-QLI.1.0-Ver.1.4.1` release
 
 ```shell
-repo init -u https://github.com/quic-yocto/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.17-QLI.1.0-Ver.1.4.xml
+repo init -u https://github.com/quic-yocto/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.17-QLI.1.0-Ver.1.4.1.xml
 repo sync
 ```
 
@@ -69,9 +58,9 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.17-QLI.1.0-Ver.1.4_qim-product-sdk-1.1` release tag
+To download the `qcom-6.6.17-QLI.1.0-Ver.1.4.1_qim-product-sdk-1.1` release tag
 ```shell
-git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.17-QLI.1.0-Ver.1.4_qim-product-sdk-1.1 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.17-QLI.1.0-Ver.1.4.1_qim-product-sdk-1.1 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
