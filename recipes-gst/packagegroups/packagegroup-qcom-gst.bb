@@ -34,6 +34,7 @@ RDEPENDS:${PN}-dependencies = " \
 RDEPENDS:${PN} = " \
     ${PN}-dependencies \
     ${PN}-basic \
+    gstd \
     gstreamer1.0-plugins-qcom-oss-base \
     gstreamer1.0-plugins-qcom-oss-tools \
     gstreamer1.0-plugins-qcom-oss-batch \

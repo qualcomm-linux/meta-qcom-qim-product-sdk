@@ -12,7 +12,7 @@ DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "camera-server"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=517c6e0f680061674edced287e84166e3ab684b0;branch=imsdk.lnx.2.0.0.r1-rel;subpath=gst-plugin-qmmfsrc"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=b1abd2c36e1a35d4f36c09e9d56dbac436bef2ff;branch=imsdk.lnx.2.0.0.r1-rel;subpath=gst-plugin-qmmfsrc"
 S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.
@@ -28,6 +28,8 @@ VIDEO_MAX_FPS           := "120/1"
 CAMERA_METADATA_VERSION := "1.0"
 VIDEO_TYPE_SUPPORT      := "FALSE"
 CAMERA_SERVICE          := "QMMF"
+EIS_MODES_ENABLE        := "FALSE"
+VHDR_MODES_ENABLE       := "FALSE"
 
 # Overwrite the default platform definitions for qcm6490
 VIDEO_TYPE_SUPPORT:qcm6490 := "TRUE"
@@ -36,6 +38,8 @@ IMAGE_MAX_WIDTH:qcm6490    := "5184"
 IMAGE_MAX_HEIGHT:qcm6490   := "3880"
 VIDEO_MAX_WIDTH:qcm6490    := "5184"
 VIDEO_MAX_HEIGHT:qcm6490   := "3880"
+EIS_MODES_ENABLE:qcm6490   := "TRUE"
+VHDR_MODES_ENABLE:qcm6490  := "TRUE"
 
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
@@ -64,6 +68,8 @@ EXTRA_OECMAKE += "-DGST_VIDEO_NV12_10LE32_FORMAT_ENABLE=${VIDEO_NV12_10LE32_FORM
 EXTRA_OECMAKE += "-DGST_IMAGE_NV12_FORMAT_ENABLE=${IMAGE_NV12_FORMAT_ENABLE}"
 EXTRA_OECMAKE += "-DGST_VIDEO_TYPE_SUPPORT=${VIDEO_TYPE_SUPPORT}"
 EXTRA_OECMAKE += "-DCAMERA_SERVICE=${CAMERA_SERVICE}"
+EXTRA_OECMAKE += "-DEIS_MODES_ENABLE=${EIS_MODES_ENABLE}"
+EXTRA_OECMAKE += "-DVHDR_MODES_ENABLE=${VHDR_MODES_ENABLE}"
 
 FILES:${PN} += "${INSTALL_BINDIR}"
 FILES:${PN} += "${INSTALL_LIBDIR}"
