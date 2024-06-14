@@ -51,6 +51,7 @@ do_generate_qim_sdk[depends] = " \
     gstreamer1.0-plugins-qcom-oss-mlmeta:do_packagedata \
     gstreamer1.0-plugins-qcom-oss-mlvconverter:do_packagedata \
     gstreamer1.0-plugins-qcom-oss-mlvclassification:do_packagedata \
+    gstreamer1.0-plugins-qcom-oss-mlvsuperresolution:do_packagedata \
     gstreamer1.0-plugins-qcom-oss-mlvdetection:do_packagedata \
     gstreamer1.0-plugins-qcom-oss-mlvpose:do_packagedata \
     gstreamer1.0-plugins-qcom-oss-mlvsegmentation:do_packagedata \

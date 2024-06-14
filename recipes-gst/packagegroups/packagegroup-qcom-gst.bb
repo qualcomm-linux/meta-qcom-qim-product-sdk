@@ -43,6 +43,7 @@ RDEPENDS:${PN} = " \
     gstreamer1.0-plugins-qcom-oss-mlmeta \
     gstreamer1.0-plugins-qcom-oss-mlvconverter \
     gstreamer1.0-plugins-qcom-oss-mlvclassification \
+    gstreamer1.0-plugins-qcom-oss-mlvsuperresolution \
     gstreamer1.0-plugins-qcom-oss-mlvdetection \
     gstreamer1.0-plugins-qcom-oss-mlvpose \
     gstreamer1.0-plugins-qcom-oss-mlvsegmentation \
