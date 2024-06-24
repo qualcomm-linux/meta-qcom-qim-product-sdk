@@ -6,7 +6,7 @@
 SDK_NAME="QIM_PRODUCT_SDK"
 
 FOUND_PKGS=""
-PKG_LIST_FILE="/opt/qcom/qimsdk/${SDK_NAME}.list"
+PKG_LIST_FILE="/opt/qcom/qimpsdk/${SDK_NAME}.list"
 
 
 # check permission for execute this script
@@ -66,7 +66,7 @@ function main() {
 
     scan_qim_prod_packages
 
-    mkdir -p /opt/qcom/qimsdk
+    mkdir -p /opt/qcom/qimpsdk
 
     install_qim_prod_packages
 

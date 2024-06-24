@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 SSTATETASKS += "do_generate_tflite_sdk "
-SSTATE_OUT_DIR = "${DEPLOY_DIR}/tflitesdk_artifacts/"
+SSTATE_OUT_DIR:${MACHINE} = "${DEPLOY_DIR}/tflitesdk_artifacts/${MACHINE}/"
 SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}"
 TMP_SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}_tmp"
 
@@ -18,14 +18,18 @@ do_generate_tflite_sdk[sstate-outputdirs] = "${SSTATE_OUT_DIR}"
 do_generate_tflite_sdk[dirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_tflite_sdk[cleandirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_tflite_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
-do_generate_tflite_sdk[depends] = "tensorflow-lite:do_package_write_ipk"
+do_generate_tflite_sdk[depends] = " \
+    tensorflow-lite:do_package_write_ipk \
+    tflite-sdk:do_patch \
+    "
 
 # Add a task to generate Tflite sdk
 do_generate_tflite_sdk () {
     # generate Tflite SDK package
-    if [ ! -d ${TMP_SSTATE_IN_DIR}/${SDK_PN} ]; then
-        mkdir -p ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
+    if [ -d ${TMP_SSTATE_IN_DIR}/${SDK_PN} ]; then
+        rm -rf ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
     fi
+    mkdir -p ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
     cp -r ${WORKDIR}/*install.sh ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
     PKG_LISTS="${@get_pkgs_list(d)}"
     for pkg in "${PKG_LISTS}"

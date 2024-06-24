@@ -31,6 +31,7 @@ PLATFORM_DIR = "${@platform_dir(d)}"
 
 # Add Hexagon version for other targets below
 HEXAGON_DIR:qcm6490 = "hexagon-v68"
+HEXAGON_DIR:qcs9100 = "hexagon-v73"
 
 do_compile[noexec] = "1"
 do_package_qa[noexec] = "1"

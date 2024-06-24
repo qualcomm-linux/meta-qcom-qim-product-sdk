@@ -1,4 +1,4 @@
-From a73413d85c1f8220f539cfafaa44115902d54ce9 Mon Sep 17 00:00:00 2001
+From 3dbb9ea7afda8be5fa5cc9449c2024a58480b9fd Mon Sep 17 00:00:00 2001
 From: "Petar G. Georgiev" <quic_petarg@quicinc.com>
 Date: Tue, 7 Mar 2023 17:25:59 +0200
 Subject: [PATCH] waylandsink: support gbm buffer backend protocol
@@ -17,13 +17,13 @@ Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
  ext/wayland/gstwaylandsink.c |  46 ++++++++-
  ext/wayland/gstwaylandsink.h |   3 +
  ext/wayland/meson.build      |   8 +-
- ext/wayland/wldisplay.c      |  57 +++++++++++
+ ext/wayland/wldisplay.c      |  57 ++++++++++++
  ext/wayland/wldisplay.h      |  10 ++
- ext/wayland/wlgbmallocator.c | 180 +++++++++++++++++++++++++++++++++++
+ ext/wayland/wlgbmallocator.c | 175 +++++++++++++++++++++++++++++++++++
  ext/wayland/wlgbmallocator.h |  38 ++++++++
- ext/wayland/wlvideoformat.c  |  95 ++++++++++++------
+ ext/wayland/wlvideoformat.c  |  95 +++++++++++++------
  ext/wayland/wlvideoformat.h  |   4 +-
- 9 files changed, 405 insertions(+), 36 deletions(-)
+ 9 files changed, 400 insertions(+), 36 deletions(-)
  create mode 100644 ext/wayland/wlgbmallocator.c
  create mode 100644 ext/wayland/wlgbmallocator.h
 
@@ -371,10 +371,10 @@ index 9c82e17..bdd00ba 100644
  
 diff --git a/ext/wayland/wlgbmallocator.c b/ext/wayland/wlgbmallocator.c
 new file mode 100644
-index 0000000..fd612fc
+index 0000000..323ac51
 --- /dev/null
 +++ b/ext/wayland/wlgbmallocator.c
-@@ -0,0 +1,180 @@
+@@ -0,0 +1,175 @@
 +/* GStreamer Wayland video sink
 + *
 + * Copyright (C) 2016 STMicroelectronics SA
@@ -456,7 +456,7 @@ index 0000000..fd612fc
 +    GstWlDisplay * display, const GstVideoInfo * info, gboolean isubwc)
 +{
 +  gint fd, metafd, format, flags = 0;
-+  guint width, height, duplicated = 0;
++  guint width, height;
 +  struct gbm_buffer_params *params;
 +
 +  struct gbm_import_fd_data bufinfo;
@@ -546,12 +546,7 @@ index 0000000..fd612fc
 +  g_mutex_clear (&gbmdata.lock);
 +  g_cond_clear (&gbmdata.cond);
 +
-+#ifdef GBM_PERFORM_GET_FD_WITH_NEW
-+  gbm_perform (GBM_PERFORM_GET_FD_WITH_NEW, &duplicated);
-+#endif
-+
-+  if (duplicated == 0)
-+    gbm_bo_destroy (bo);
++  gbm_bo_destroy (bo);
 +
 +  return gbmdata.wbuffer;
 +}

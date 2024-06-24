@@ -12,7 +12,7 @@ DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "camera-server"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=9282d88f010e69621ba1526d7cf6f5634173846d;branch=imsdk.lnx.2.0.0.r1-rel;subpath=gst-plugin-qmmfsrc"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=e56febe4d65fe6f30e894746527029b7194b022e;branch=imsdk.lnx.2.0.0.r1-rel;subpath=gst-plugin-qmmfsrc"
 S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.

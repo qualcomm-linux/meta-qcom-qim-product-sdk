@@ -5,7 +5,7 @@ LICENSE = "BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a472ca93716d01033a"
 
 SSTATETASKS += "do_generate_qim_sdk "
-SSTATE_OUT_DIR = "${DEPLOY_DIR}/qimsdk_artifacts/"
+SSTATE_OUT_DIR:${MACHINE} = "${DEPLOY_DIR}/qimsdk_artifacts/${MACHINE}/"
 SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}"
 TMP_SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}_tmp"
 
@@ -15,6 +15,55 @@ python __anonymous () {
         bb.build.addtask('do_generate_qim_sdk', 'do_package_write_ipk', 'do_packagedata' , d)
 }
 
+GST_PLUGINS = " \
+    gstreamer1.0:do_package_write_ipk \
+    gstreamer1.0-plugins-base:do_package_write_ipk \
+    gstreamer1.0-plugins-good:do_package_write_ipk \
+    gstreamer1.0-plugins-bad:do_package_write_ipk \
+    gstreamer1.0-rtsp-server:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-base:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-tools:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-batch:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-metamux:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mldemux:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlmeta:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvconverter:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvclassification:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvsuperresolution:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvdetection:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvpose:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvsegmentation:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-overlay:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-qmmfsrc:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-socket:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vcomposer:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vsplit:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vtransform:do_package_write_ipk \
+    gstreamer1.0-qcom-oss-sample-apps:do_package_write_ipk \
+  "
+
+GST_PLUGINS:remove:qcs9100 = " \
+    gstreamer1.0-plugins-qcom-oss-base:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-tools:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-batch:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-metamux:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mldemux:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlmeta:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvconverter:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvclassification:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvsuperresolution:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvdetection:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvpose:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-mlvsegmentation:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-overlay:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-qmmfsrc:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-socket:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vcomposer:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vsplit:do_package_write_ipk \
+    gstreamer1.0-plugins-qcom-oss-vtransform:do_package_write_ipk \
+    gstreamer1.0-qcom-oss-sample-apps:do_package_write_ipk \
+  "
+
 addtask do_generate_qim_sdk_setscene
 do_generate_qim_sdk[sstate-inputdirs] = "${SSTATE_IN_DIR}"
 do_generate_qim_sdk[sstate-outputdirs] = "${SSTATE_OUT_DIR}"
@@ -22,46 +71,23 @@ do_generate_qim_sdk[dirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_sdk[cleandirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
 do_generate_qim_sdk[depends] = " \
-    cairo:do_packagedata \
-    gdk-pixbuf:do_packagedata \
-    liba52:do_packagedata \
-    libdaemon:do_packagedata \
-    libgudev:do_packagedata \
-    lame:do_packagedata \
-    libpsl:do_packagedata \
-    librsvg:do_packagedata \
-    libsoup-2.4:do_packagedata \
-    libtheora:do_packagedata \
-    libwebp:do_packagedata \
-    mpg123:do_packagedata \
-    orc:do_packagedata \
-    sbc:do_packagedata \
-    speex:do_packagedata \
-    taglib:do_packagedata \
-    gstreamer1.0:do_packagedata \
-    gstreamer1.0-plugins-base:do_packagedata \
-    gstreamer1.0-plugins-good:do_packagedata \
-    gstreamer1.0-plugins-bad:do_packagedata \
-    gstreamer1.0-rtsp-server:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-base:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-tools:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-batch:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-metamux:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mldemux:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlmeta:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvconverter:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvclassification:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvsuperresolution:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvdetection:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvpose:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-mlvsegmentation:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-overlay:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-qmmfsrc:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-socket:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-vcomposer:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-vsplit:do_packagedata \
-    gstreamer1.0-plugins-qcom-oss-vtransform:do_packagedata \
-    gstreamer1.0-qcom-oss-sample-apps:do_packagedata \
+    qim-sdk:do_patch \
+    gdk-pixbuf:do_package_write_ipk \
+    liba52:do_package_write_ipk \
+    libdaemon:do_package_write_ipk \
+    libgudev:do_package_write_ipk \
+    lame:do_package_write_ipk \
+    libpsl:do_package_write_ipk \
+    librsvg:do_package_write_ipk \
+    libsoup-2.4:do_package_write_ipk \
+    libtheora:do_package_write_ipk \
+    libwebp:do_package_write_ipk \
+    mpg123:do_package_write_ipk \
+    orc:do_package_write_ipk \
+    sbc:do_package_write_ipk \
+    speex:do_package_write_ipk \
+    taglib:do_package_write_ipk \
+    ${GST_PLUGINS} \
   "
 
 
@@ -113,7 +139,7 @@ def get_pkgs_list(d):
     deploydir = d.getVar("DEPLOY_DIR", True)
     timestampfile = os.path.join(deploydir, "qimsdk-timestamp")
     pkgslist = []
-    dep_list = ["libcairo2", "libgdk-pixbuf-2.0-0", "liba52-0", "a52"
+    dep_list = ["libgdk-pixbuf-2.0-0", "liba52-0", "a52"
                 "libdaemon0", "libgudev-1.0-0", "lame_", "libmp3lame0",
                 "libpsl5", "librsvg-2-2", "libsoup-2.4_",
                 "libtheora_", "libwebp_", "mpg123_",

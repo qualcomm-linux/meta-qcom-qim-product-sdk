@@ -1,9 +1,10 @@
-From bd7cbbaab12fda8f3d1dd0d94db5d7eb11619d34 Mon Sep 17 00:00:00 2001
+From 96fbf1135d8912ba18cd82bc6dfb59e33a51da47 Mon Sep 17 00:00:00 2001
 From: ppachang <quic_ppachang@quicinc.com>
 Date: Thu, 18 Jan 2024 13:12:50 +0530
 Subject: [PATCH] v4l2 : Add support for dynamic resolution change
 
 Signed-off-by: ppachang <quic_ppachang@quicinc.com>
+
 ---
  sys/v4l2/gstv4l2allocator.c  |   2 +-
  sys/v4l2/gstv4l2bufferpool.c | 160 +++++----------
@@ -28,7 +29,7 @@ index 2d1bad4..632c135 100644
  
    GST_ERROR_OBJECT (allocator, "failed dequeuing a %s buffer: %s",
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index d48e158..8c0b791 100644
+index 8c63de1..057c3e5 100644
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
 @@ -1133,7 +1133,7 @@ gst_v4l2_buffer_pool_flush_start (GstBufferPool * bpool)
@@ -160,8 +161,8 @@ index d48e158..8c0b791 100644
    GST_LOG_OBJECT (pool, "dequeueing a buffer");
  
    res = gst_v4l2_allocator_dqbuf (pool->vallocator, &group);
--  if (res == GST_FLOW_EOS || (group->buffer.flags & V4L2_BUF_FLAG_LAST))
-+  if (res == GST_V4L2_FLOW_LAST_BUFFER || (group->buffer.flags & V4L2_BUF_FLAG_LAST))
+-  if (res == GST_FLOW_EOS)
++  if (res == GST_V4L2_FLOW_LAST_BUFFER)
      goto eos;
    if (res != GST_FLOW_OK)
      goto dqbuf_failed;
@@ -210,7 +211,7 @@ index d48e158..8c0b791 100644
  
    pool->vallocator = gst_v4l2_allocator_new (GST_OBJECT (pool), obj);
    if (pool->vallocator == NULL)
-@@ -2371,6 +2284,43 @@ gst_v4l2_buffer_pool_copy_at_threshold (GstV4l2BufferPool * pool, gboolean copy)
+@@ -2384,6 +2297,43 @@ gst_v4l2_buffer_pool_copy_at_threshold (GstV4l2BufferPool * pool, gboolean copy)
    GST_OBJECT_UNLOCK (pool);
  }
  
@@ -254,7 +255,7 @@ index d48e158..8c0b791 100644
  gboolean
  gst_v4l2_buffer_pool_flush (GstV4l2Object * v4l2object)
  {
-@@ -2385,8 +2335,12 @@ gst_v4l2_buffer_pool_flush (GstV4l2Object * v4l2object)
+@@ -2398,8 +2348,12 @@ gst_v4l2_buffer_pool_flush (GstV4l2Object * v4l2object)
  
    gst_v4l2_buffer_pool_streamoff (pool);
  
@@ -269,7 +270,7 @@ index d48e158..8c0b791 100644
  
    gst_object_unref (bpool);
    return ret;
-@@ -2404,13 +2358,5 @@ gst_v4l2_buffer_pool_flush (GstV4l2Object * v4l2object)
+@@ -2417,13 +2371,5 @@ gst_v4l2_buffer_pool_flush (GstV4l2Object * v4l2object)
  void
  gst_v4l2_buffer_pool_enable_resolution_change (GstV4l2BufferPool * pool)
  {
@@ -299,7 +300,7 @@ index 19c96c3..527643d 100644
    gboolean empty;
    GCond empty_cond;
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index f8b3341..6859d51 100644
+index bb21fc6..8402b6f 100644
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
 @@ -520,6 +520,9 @@ gst_v4l2_object_new (GstElement * element,
@@ -405,7 +406,7 @@ index f8b3341..6859d51 100644
    pool = gst_v4l2_object_get_buffer_pool (v4l2object);
    if (pool) {
      if (!gst_v4l2_buffer_pool_orphan (v4l2object)) {
-@@ -5387,3 +5419,138 @@ gst_v4l2_object_get_buffer_pool (GstV4l2Object * v4l2object)
+@@ -5388,3 +5420,138 @@ gst_v4l2_object_get_buffer_pool (GstV4l2Object * v4l2object)
  
    return ret;
  }

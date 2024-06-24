@@ -58,9 +58,9 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.28-QLI.1.1-Ver.1.0_qim-product-sdk-1.1.2` release tag
+To download the `qcom-6.6.28-QLI.1.1-Ver.1.0_qim-product-sdk-1.1.3` release tag
 ```shell
-git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.28-QLI.1.1-Ver.1.0_qim-product-sdk-1.1.2 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.28-QLI.1.1-Ver.1.0_qim-product-sdk-1.1.3 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
@@ -109,3 +109,7 @@ Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/q
 [Standard Yocto environment](https://docs.yoctoproject.org/4.0.13/brief-yoctoprojectqs/index.html)
 
 [QCOM Linux Yocto BSP releases](https://github.com/quic-yocto/qcom-manifest/blob/qcom-linux-kirkstone/README.md)
+
+# Maintainer(s)
+1. Chandra Bothsa <quic_cbothsa@quicinc.com>
+2. Gautam Naidu Bodala <quic_gbodala@quicinc.com>

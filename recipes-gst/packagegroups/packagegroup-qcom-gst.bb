@@ -13,7 +13,6 @@ PACKAGES = " \
     "
 
 RDEPENDS:${PN}-dependencies = " \
-    cairo \
     gdk-pixbuf \
     liba52 \
     libdaemon \

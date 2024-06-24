@@ -1,4 +1,4 @@
-From feb77c7c641365e04794c4786d49fe01f9653f63 Mon Sep 17 00:00:00 2001
+From 36a738e9ec1ff7caa63005dc4794c5170543483e Mon Sep 17 00:00:00 2001
 From: ppachang <quic_ppachang@quicinc.com>
 Date: Sat, 28 Oct 2023 16:42:14 +0530
 Subject: [PATCH] v4l2 : Add support for dma memory allocation
@@ -9,7 +9,7 @@ Signed-off-by: ppachang <quic_ppachang@quicinc.com>
  sys/v4l2/ext/videodev2.h     |   1 +
  sys/v4l2/gstv4l2allocator.c  |  78 +++-
  sys/v4l2/gstv4l2allocator.h  |   9 +
- sys/v4l2/gstv4l2bufferpool.c |  77 +++-
+ sys/v4l2/gstv4l2bufferpool.c |  81 ++++-
  sys/v4l2/gstv4l2bufferpool.h |   2 +
  sys/v4l2/gstv4l2imagepool.c  | 667 +++++++++++++++++++++++++++++++++++
  sys/v4l2/gstv4l2imagepool.h  | 134 +++++++
@@ -18,7 +18,7 @@ Signed-off-by: ppachang <quic_ppachang@quicinc.com>
  sys/v4l2/gstv4l2videodec.c   |   2 +-
  sys/v4l2/gstv4l2videoenc.c   |  40 ++-
  sys/v4l2/meson.build         |   3 +-
- 12 files changed, 1055 insertions(+), 20 deletions(-)
+ 12 files changed, 1060 insertions(+), 19 deletions(-)
  create mode 100644 sys/v4l2/gstv4l2imagepool.c
  create mode 100644 sys/v4l2/gstv4l2imagepool.h
 
@@ -208,7 +208,7 @@ index eb51524..2166b6b 100644
  
  #endif /* __GST_V4L2_ALLOCATOR_H__ */
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index 4de1da4..914b0f4 100644
+index 4de1da4..8c63de1 100644
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
 @@ -46,12 +46,16 @@
@@ -287,15 +287,6 @@ index 4de1da4..914b0f4 100644
  static gboolean
  gst_v4l2_buffer_pool_start (GstBufferPool * bpool)
  {
-@@ -1337,7 +1386,7 @@ gst_v4l2_buffer_pool_dqbuf (GstV4l2BufferPool * pool, GstBuffer ** buffer,
-   GST_LOG_OBJECT (pool, "dequeueing a buffer");
- 
-   res = gst_v4l2_allocator_dqbuf (pool->vallocator, &group);
--  if (res == GST_FLOW_EOS)
-+  if (res == GST_FLOW_EOS || (group->buffer.flags & V4L2_BUF_FLAG_LAST))
-     goto eos;
-   if (res != GST_FLOW_OK)
-     goto dqbuf_failed;
 @@ -1692,7 +1741,10 @@ gst_v4l2_buffer_pool_complete_release_buffer (GstBufferPool * bpool,
                  GST_V4L2_IMPORT_QUARK, NULL, NULL);
  
@@ -308,7 +299,7 @@ index 4de1da4..914b0f4 100644
  
              /* playback, put the buffer back in the queue to refill later. */
              pclass->release_buffer (bpool, buffer);
-@@ -2091,11 +2143,32 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+@@ -2091,11 +2143,38 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
          case GST_V4L2_IO_DMABUF_IMPORT:
          {
            GstBuffer *tmp;
@@ -323,6 +314,12 @@ index 4de1da4..914b0f4 100644
 +            ret = gst_buffer_pool_acquire_buffer (bpool, buf, NULL);
 +            if (ret != GST_FLOW_OK)
 +              goto acquire_failed;
++          }
++
++          /* An empty buffer on capture indicates the end of stream */
++          if (gst_buffer_get_size (*buf) == 0) {
++            gst_v4l2_buffer_pool_resize_buffer (bpool, *buf);
++            goto eos;
 +          }
  
            /* Replace our buffer with downstream allocated buffer */
@@ -356,7 +353,7 @@ index 60340c2..19c96c3 100644
  void                gst_v4l2_buffer_pool_set_other_pool (GstV4l2BufferPool * pool,
 diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
 new file mode 100644
-index 0000000..02f58aa
+index 0000000..2e0e7ce
 --- /dev/null
 +++ b/sys/v4l2/gstv4l2imagepool.c
 @@ -0,0 +1,667 @@
@@ -646,7 +643,7 @@ index 0000000..02f58aa
 +    return NULL;
 +  }
 +
-+  fd = priv->gbm_bo_get_fd (bo);
++  fd = bo->ion_fd;
 +
 +  g_mutex_lock (&priv->lock);
 +  g_hash_table_insert (priv->datamap, GINT_TO_POINTER (fd), bo);
@@ -1168,7 +1165,7 @@ index 0000000..7b76733
 +
 +#endif /* __GST_V4L2_IMAGE_POOL_H__ */
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index 7b707f0..52fd716 100644
+index 7b707f0..bb21fc6 100644
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
 @@ -1338,6 +1338,12 @@ gst_v4l2_object_v4l2fourcc_to_video_format (guint32 fourcc)

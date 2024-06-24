@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 SSTATETASKS += "do_generate_qim_prod_sdk "
-SSTATE_OUT_DIR = "${DEPLOY_DIR}/qim_prod_sdk_artifacts/"
+SSTATE_OUT_DIR:${MACHINE} = "${DEPLOY_DIR}/qim_prod_sdk_artifacts/${MACHINE}/"
 SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}"
 TMP_SSTATE_IN_DIR = "${TOPDIR}/${SDK_PN}_tmp"
 
@@ -21,6 +21,18 @@ python __anonymous () {
         bb.build.addtask('do_generate_qim_prod_sdk', 'do_package_write_ipk', 'do_packagedata', d)
 }
 
+GST_ML_PLUGINS = " \
+        gstreamer1.0-plugins-qcom-oss-mlsnpe:do_package_write_ipk \
+        gstreamer1.0-plugins-qcom-oss-mlqnn:do_package_write_ipk \
+        gstreamer1.0-plugins-qcom-oss-mltflite:do_package_write_ipk \
+    "
+
+GST_ML_PLUGINS:remove:qcs9100 = " \
+        gstreamer1.0-plugins-qcom-oss-mlsnpe:do_package_write_ipk \
+        gstreamer1.0-plugins-qcom-oss-mlqnn:do_package_write_ipk \
+        gstreamer1.0-plugins-qcom-oss-mltflite:do_package_write_ipk \
+    "
+
 addtask do_generate_qim_prod_sdk_setscene
 do_generate_qim_prod_sdk[sstate-inputdirs] = "${SSTATE_IN_DIR}"
 do_generate_qim_prod_sdk[sstate-outputdirs] = "${SSTATE_OUT_DIR}"
@@ -28,24 +40,24 @@ do_generate_qim_prod_sdk[dirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_prod_sdk[cleandirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_prod_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
 do_generate_qim_prod_sdk[depends] = " \
-         snpe:do_packagedata \
-         qnn:do_packagedata \
-         gstreamer1.0-plugins-qcom-oss-mlsnpe:do_packagedata \
-         gstreamer1.0-plugins-qcom-oss-mlqnn:do_packagedata \
-         gstreamer1.0-plugins-qcom-oss-mltflite:do_packagedata \
-         packagegroup-qcom-qim-product:do_packagedata \
+         qim-product-sdk:do_patch \
+         snpe:do_package_write_ipk \
+         qnn:do_package_write_ipk \
+         ${GST_ML_PLUGINS} \
          qim-sdk:do_generate_qim_sdk \
          tflite-sdk:do_generate_tflite_sdk \
    "
+
 # Add a task to generate qim product sdk
 do_generate_qim_prod_sdk () {
     # generate QIM PRODUCT SDK package
-    if [ ! -d ${TMP_SSTATE_IN_DIR}/${SDK_PN} ]; then
-        mkdir -p ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
+    if [ -d ${TMP_SSTATE_IN_DIR}/${SDK_PN} ]; then
+        rm -rf ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
     fi
+    mkdir -p ${TMP_SSTATE_IN_DIR}/${SDK_PN}/
     cd ${TMP_SSTATE_IN_DIR}/
-    tar -xvf ${DEPLOY_DIR}/qimsdk_artifacts/qim-sdk_*.tar.gz .
-    tar -xvf ${DEPLOY_DIR}/tflitesdk_artifacts/tflite-sdk_*.tar.gz .
+    tar -xvf ${DEPLOY_DIR}/qimsdk_artifacts/${MACHINE}/qim-sdk_*.tar.gz .
+    tar -xvf ${DEPLOY_DIR}/tflitesdk_artifacts/${MACHINE}/tflite-sdk_*.tar.gz .
     for pkg in `find . -type f  -name "*.ipk"`
     do
         mv $pkg ./${SDK_PN}/
@@ -71,12 +83,14 @@ do_generate_qim_prod_sdk () {
     done
     tar -zcf ${SSTATE_IN_DIR}/${SDK_PN}-dbg_${PV}.tar.gz ./${SDK_PN}/dbg/*
     rm -rf ./${SDK_PN}/dbg
-    mkdir -p ./${SDK_PN}/doc/
     for f in `find . -type f \( -name "*-doc_*" -o -name "*-staticdev_*" \)`
     do
-        mv $f ./${SDK_PN}/doc/
+        rm -rf $f
     done
-    rm -rf ./${SDK_PN}/doc
+    for f in `find . -type f \( -name "*-locale-*" -o -name "*-src_*" \)`
+    do
+        rm -rf $f
+    done
     tar -zcf ${SSTATE_IN_DIR}/${SDK_PN}-rel_${PV}.tar.gz ./${SDK_PN}/*
     rm -rf ${TMP_SSTATE_IN_DIR}
     bbwarn "QIM Product SDK available at ${SSTATE_OUT_DIR}"
@@ -94,7 +108,7 @@ def get_pkgs_list(d):
                     pkgslist.append(os.path.join(deploydir, pkgtype, pkgdir, f))
     return " \\\n ".join(pkgslist)
 
-python do_generate_qim_sdk_setscene() {
+python do_generate_qim_prod_sdk_setscene() {
     sstate_setscene(d)
 }
 
