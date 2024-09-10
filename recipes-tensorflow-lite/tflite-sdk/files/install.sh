@@ -8,6 +8,7 @@ SDK_NAME="TFLITE_SDK"
 FOUND_PKGS=""
 PKG_LIST_DIR="/opt/qcom/tflite/"
 PKG_LIST_FILE="${PKG_LIST_DIR}/${SDK_NAME}.list"
+IS_DEB=0
 
 # check permission for execute this script
 function check_permission() {
@@ -24,11 +25,22 @@ function scan_tflite_packages() {
         | grep -v "\-dev_" \
         | grep -v "\-staticdev_" \
         | tr '\n' ' '`
+    if [[ -z "${FOUND_PKGS}" ]]; then
+        FOUND_PKGS=`find . -name "*.deb" \
+            | grep -v "\-dbg_" \
+            | grep -v "\-dev_" \
+            | grep -v "\-staticdev_" \
+            | tr '\n' ' '`
+        IS_DEB=1
+    fi
 }
 
 # install packages and save list to file
 function install_tflite_packages() {
     install_command="opkg install --force-reinstall --force-depends --force-overwrite"
+    if [[ ${IS_DEB} == 1 ]]; then
+        install_command="dpkg -i --force-depends --force-overwrite"
+    fi
 
     for PKG_FILE in ${FOUND_PKGS}; do
         ${install_command} ${PKG_FILE}

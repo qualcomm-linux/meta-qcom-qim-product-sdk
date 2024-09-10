@@ -1,0 +1,387 @@
+From 76bee7a85fc3d78fad4674ffeb76797dc68acaf5 Mon Sep 17 00:00:00 2001
+From: Ivan Evlogiev <quic_ievlogie@quicinc.com>
+Date: Wed, 22 May 2024 13:37:07 +0000
+Subject: [PATCH 7/7] gstreamer1.0-plugins-bad: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    ext/wayland
+    gst-libs/gst/codecparsers
+    gst-libs/gst/wayland
+    gst/mxf
+    gst/videoparsers
+    sys/decklink
+    sys/dvb
+
+Signed-off-by: Ivan Evlogiev <quic_ievlogie@quicinc.com>
+---
+ ext/meson.build          | 152 ++++++++++++++++++++-------------------
+ gst-libs/gst/meson.build |  47 ++++++------
+ gst/meson.build          |  36 ++++++----
+ meson.build              |  10 ++-
+ meson_options.txt        |   4 ++
+ sys/meson.build          |  62 ++++++++--------
+ 6 files changed, 169 insertions(+), 142 deletions(-)
+
+diff --git a/ext/meson.build b/ext/meson.build
+index 1e40ace..8e69778 100644
+--- a/ext/meson.build
++++ b/ext/meson.build
+@@ -1,74 +1,78 @@
+-subdir('aes')
+-subdir('assrender')
+-subdir('aom')
+-subdir('avtp')
+-subdir('bs2b')
+-subdir('bz2')
+-subdir('chromaprint')
+-subdir('closedcaption')
+-subdir('colormanagement')
+-subdir('curl')
+-subdir('dash')
+-subdir('dc1394')
+-subdir('directfb')
+-subdir('dtls')
+-subdir('dts')
+-subdir('faac')
+-subdir('faad')
+-subdir('fdkaac')
+-subdir('flite')
+-subdir('fluidsynth')
+-subdir('gme')
+-subdir('gs')
+-subdir('gsm')
+-subdir('hls')
+-subdir('iqa')
+-subdir('isac')
+-subdir('kate')
+-subdir('ladspa')
+-subdir('ldac')
+-subdir('libde265')
+-subdir('lv2')
+-subdir('mdns')
+-subdir('modplug')
+-subdir('mpeg2enc')
+-subdir('mplex')
+-subdir('musepack')
+-subdir('neon')
+-subdir('onnx')
+-subdir('openal')
+-subdir('openaptx')
+-subdir('opencv')
+-subdir('openexr')
+-subdir('openh264')
+-subdir('openjpeg')
+-subdir('openmpt')
+-subdir('openni2')
+-subdir('opus')
+-subdir('qroverlay')
+-subdir('resindvd')
+-subdir('rsvg')
+-subdir('rtmp')
+-subdir('sbc')
+-subdir('sctp')
+-subdir('smoothstreaming')
+-subdir('sndfile')
+-subdir('soundtouch')
+-subdir('spandsp')
+-subdir('srt')
+-subdir('srtp')
+-subdir('svthevcenc')
+-subdir('teletextdec')
+-subdir('ttml')
+-subdir('voaacenc')
+-subdir('voamrwbenc')
+-subdir('vulkan')
+-subdir('wayland')
+-subdir('webrtc')
+-subdir('webrtcdsp')
+-subdir('webp')
+-subdir('wildmidi')
+-subdir('wpe')
+-subdir('x265')
+-subdir('zxing')
+-subdir('zbar')
++if build_all_plugins
++  subdir('aes')
++  subdir('assrender')
++  subdir('aom')
++  subdir('avtp')
++  subdir('bs2b')
++  subdir('bz2')
++  subdir('chromaprint')
++  subdir('closedcaption')
++  subdir('colormanagement')
++  subdir('curl')
++  subdir('dash')
++  subdir('dc1394')
++  subdir('directfb')
++  subdir('dtls')
++  subdir('dts')
++  subdir('faac')
++  subdir('faad')
++  subdir('fdkaac')
++  subdir('flite')
++  subdir('fluidsynth')
++  subdir('gme')
++  subdir('gs')
++  subdir('gsm')
++  subdir('hls')
++  subdir('iqa')
++  subdir('isac')
++  subdir('kate')
++  subdir('ladspa')
++  subdir('ldac')
++  subdir('libde265')
++  subdir('lv2')
++  subdir('mdns')
++  subdir('modplug')
++  subdir('mpeg2enc')
++  subdir('mplex')
++  subdir('musepack')
++  subdir('neon')
++  subdir('onnx')
++  subdir('openal')
++  subdir('openaptx')
++  subdir('opencv')
++  subdir('openexr')
++  subdir('openh264')
++  subdir('openjpeg')
++  subdir('openmpt')
++  subdir('openni2')
++  subdir('opus')
++  subdir('qroverlay')
++  subdir('resindvd')
++  subdir('rsvg')
++  subdir('rtmp')
++  subdir('sbc')
++  subdir('sctp')
++  subdir('smoothstreaming')
++  subdir('sndfile')
++  subdir('soundtouch')
++  subdir('spandsp')
++  subdir('srt')
++  subdir('srtp')
++  subdir('svthevcenc')
++  subdir('teletextdec')
++  subdir('ttml')
++  subdir('voaacenc')
++  subdir('voamrwbenc')
++  subdir('vulkan')
++  subdir('wayland')
++  subdir('webrtc')
++  subdir('webrtcdsp')
++  subdir('webp')
++  subdir('wildmidi')
++  subdir('wpe')
++  subdir('x265')
++  subdir('zxing')
++  subdir('zbar')
++else
++  subdir('wayland')
++endif
+diff --git a/gst-libs/gst/meson.build b/gst-libs/gst/meson.build
+index 77dadcf..307bf2e 100644
+--- a/gst-libs/gst/meson.build
++++ b/gst-libs/gst/meson.build
+@@ -1,22 +1,27 @@
+-subdir('uridownloader')
++if build_all_plugins
++  subdir('uridownloader')
+ 
+-subdir('adaptivedemux')
+-subdir('audio')
+-subdir('basecamerabinsrc')
+-subdir('codecparsers')
+-subdir('codecs')
+-subdir('d3d11')
+-subdir('insertbin')
+-subdir('interfaces')
+-subdir('isoff')
+-subdir('mpegts')
+-subdir('opencv')
+-subdir('play')
+-subdir('player')
+-subdir('sctp')
+-subdir('transcoder')
+-subdir('va')
+-subdir('vulkan')
+-subdir('wayland')
+-subdir('webrtc')
+-subdir('winrt')
++  subdir('adaptivedemux')
++  subdir('audio')
++  subdir('basecamerabinsrc')
++  subdir('codecparsers')
++  subdir('codecs')
++  subdir('d3d11')
++  subdir('insertbin')
++  subdir('interfaces')
++  subdir('isoff')
++  subdir('mpegts')
++  subdir('opencv')
++  subdir('play')
++  subdir('player')
++  subdir('sctp')
++  subdir('transcoder')
++  subdir('va')
++  subdir('vulkan')
++  subdir('wayland')
++  subdir('webrtc')
++  subdir('winrt')
++else
++  subdir('codecparsers')
++  subdir('wayland')
++endif
+diff --git a/gst/meson.build b/gst/meson.build
+index 9cf62db..931f61a 100644
+--- a/gst/meson.build
++++ b/gst/meson.build
+@@ -1,18 +1,24 @@
+-foreach plugin : ['accurip', 'adpcmdec', 'adpcmenc', 'aiff', 'asfmux',
+-                  'audiobuffersplit', 'audiofxbad', 'audiomixmatrix',
+-                  'audiolatency', 'audiovisualizers', 'autoconvert', 'bayer',
+-                  'camerabin2', 'codecalpha', 'coloreffects', 'debugutils', 'dvbsubenc',
+-                  'dvbsuboverlay', 'dvdspu', 'faceoverlay', 'festival',
+-                  'fieldanalysis', 'freeverb', 'frei0r', 'gaudieffects', 'gdp',
+-                  'geometrictransform', 'id3tag', 'inter', 'interlace',
+-                  'ivfparse', 'ivtc', 'jp2kdecimator', 'jpegformat', 'librfb',
+-                  'midi', 'mpegdemux', 'mpegpsmux', 'mpegtsdemux', 'mpegtsmux',
+-                  'mxf', 'netsim', 'onvif', 'pcapparse', 'pnm', 'proxy',
+-                  'rawparse', 'removesilence', 'rist', 'rtmp2', 'rtp', 'sdp',
+-                  'segmentclip', 'siren', 'smooth', 'speed', 'subenc', 'switchbin',
+-                  'timecode', 'transcode', 'videofilters',
+-                  'videoframe_audiolevel', 'videoparsers', 'videosignal',
+-                  'vmnc', 'y4m']
++gst_plugins = ['mxf']
++
++if build_all_plugins
++  gst_plugins = ['accurip', 'adpcmdec', 'adpcmenc', 'aiff', 'asfmux',
++                 'audiobuffersplit', 'audiofxbad', 'audiomixmatrix',
++                 'audiolatency', 'audiovisualizers', 'autoconvert', 'bayer',
++                 'camerabin2', 'codecalpha', 'coloreffects', 'debugutils', 'dvbsubenc',
++                 'dvbsuboverlay', 'dvdspu', 'faceoverlay', 'festival',
++                 'fieldanalysis', 'freeverb', 'frei0r', 'gaudieffects', 'gdp',
++                 'geometrictransform', 'id3tag', 'inter', 'interlace',
++                 'ivfparse', 'ivtc', 'jp2kdecimator', 'jpegformat', 'librfb',
++                 'midi', 'mpegdemux', 'mpegpsmux', 'mpegtsdemux', 'mpegtsmux',
++                 'mxf', 'netsim', 'onvif', 'pcapparse', 'pnm', 'proxy',
++                 'rawparse', 'removesilence', 'rist', 'rtmp2', 'rtp', 'sdp',
++                 'segmentclip', 'siren', 'smooth', 'speed', 'subenc', 'switchbin',
++                 'timecode', 'transcode', 'videofilters',
++                 'videoframe_audiolevel', 'videoparsers', 'videosignal',
++                 'vmnc', 'y4m']
++endif
++
++foreach plugin : gst_plugins
+   if not get_option(plugin).disabled()
+     subdir(plugin)
+   endif
+diff --git a/meson.build b/meson.build
+index b840d3a..5762e6e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -507,13 +507,17 @@ pkgconfig.generate(
+ 
+ gpl_allowed = get_option('gpl').allowed()
+ 
++build_all_plugins = get_option('build_all_plugins')
++
+ subdir('gst-libs')
+ subdir('gst')
+ subdir('sys')
+ subdir('ext')
+-subdir('tests')
+-subdir('data')
+-subdir('tools')
++if build_all_plugins
++  subdir('tests')
++  subdir('data')
++  subdir('tools')
++endif
+ 
+ if have_orcc
+   update_orc_dist_files = find_program('scripts/update-orc-dist-files.py')
+diff --git a/meson_options.txt b/meson_options.txt
+index b347dcb..52436f4 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -216,3 +216,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build_all_plugins', type: 'boolean', value: true,
++       description: 'Enable build of all plugins')
+diff --git a/sys/meson.build b/sys/meson.build
+index f635077..3ea87b5 100644
+--- a/sys/meson.build
++++ b/sys/meson.build
+@@ -1,29 +1,33 @@
+-subdir('androidmedia')
+-subdir('applemedia')
+-subdir('asio')
+-subdir('bluez')
+-subdir('d3d11')
+-subdir('d3dvideosink')
+-subdir('decklink')
+-subdir('directsound')
+-#subdir('dshowdecwrapper')
+-#subdir('dshowsrcwrapper')
+-#subdir('dshowvideosink')
+-subdir('dvb')
+-subdir('fbdev')
+-subdir('ipcpipeline')
+-subdir('kms')
+-subdir('magicleap')
+-subdir('mediafoundation')
+-subdir('msdk')
+-subdir('nvcodec')
+-subdir('opensles')
+-subdir('shm')
+-subdir('tinyalsa')
+-subdir('uvch264')
+-subdir('v4l2codecs')
+-subdir('va')
+-subdir('wasapi')
+-subdir('wasapi2')
+-subdir('winks')
+-subdir('winscreencap')
++if build_all_plugins
++  subdir('androidmedia')
++  subdir('applemedia')
++  subdir('asio')
++  subdir('bluez')
++  subdir('d3d11')
++  subdir('d3dvideosink')
++  subdir('decklink')
++  subdir('directsound')
++  #subdir('dshowdecwrapper')
++  #subdir('dshowsrcwrapper')
++  #subdir('dshowvideosink')
++  subdir('dvb')
++  subdir('fbdev')
++  subdir('ipcpipeline')
++  subdir('kms')
++  subdir('magicleap')
++  subdir('mediafoundation')
++  subdir('msdk')
++  subdir('nvcodec')
++  subdir('opensles')
++  subdir('shm')
++  subdir('tinyalsa')
++  subdir('uvch264')
++  subdir('v4l2codecs')
++  subdir('va')
++  subdir('wasapi')
++  subdir('wasapi2')
++  subdir('winks')
++  subdir('winscreencap')
++else
++  subdir('decklink')
++endif
+-- 
+2.34.1
+

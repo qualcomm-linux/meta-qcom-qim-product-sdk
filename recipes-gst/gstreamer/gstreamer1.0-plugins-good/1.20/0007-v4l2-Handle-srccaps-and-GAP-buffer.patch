@@ -1,4 +1,4 @@
-From c0fb3c4b41de43f0eff323caeeed865215f2a595 Mon Sep 17 00:00:00 2001
+From 3b686b218af0a11a5cf57076d378c7e98deaeec6 Mon Sep 17 00:00:00 2001
 From: iraj <quic_iraj@quicinc.com>
 Date: Wed, 6 Mar 2024 19:52:11 +0530
 Subject: [PATCH] v4l2: Handle srccaps and GAP buffer
@@ -14,12 +14,12 @@ This ensures we preserve correct colorimetry, which might be incorrect after cap
 fixation process.
 
 ---
- sys/v4l2/gstv4l2videodec.c | 24 ++++++++++++++----------
+ sys/v4l2/gstv4l2videodec.c | 15 ++++++++++-----
  sys/v4l2/gstv4l2videoenc.c |  3 +++
- 2 files changed, 17 insertions(+), 10 deletions(-)
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
-index ee481f4..fedc879 100644
+index fb27eac..070c387 100644
 --- a/sys/v4l2/gstv4l2videodec.c
 +++ b/sys/v4l2/gstv4l2videodec.c
 @@ -440,7 +440,7 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
@@ -28,35 +28,30 @@ index ee481f4..fedc879 100644
    GstVideoCodecState *output_state;
 -  GstCaps *acquired_caps, *available_caps, *caps, *filter;
 +  GstCaps *acquired_caps, *fixation_caps, *available_caps, *caps, *filter;
-   GstStructure *st;
+   GstStructure *st, *alt_st;
    GstBufferPool *cpool;
-   GstCapsFeatures *features;
-@@ -503,17 +503,17 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   gboolean active;
+@@ -503,8 +503,9 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
    /* Create caps from the acquired format, remove the format field */
    acquired_caps = gst_video_info_to_caps (&info);
    GST_DEBUG_OBJECT (self, "Acquired caps: %" GST_PTR_FORMAT, acquired_caps);
 -  st = gst_caps_get_structure (acquired_caps, 0);
  
-   if (info.finfo->format == GST_VIDEO_FORMAT_NV12_10LE32) {
--    features = gst_caps_features_new("memory:GBM", NULL);
--    gst_caps_set_features(acquired_caps, 0, features);
--    gst_structure_remove_fields (st, "colorimetry", "chroma-site", NULL);
--  } else {
--    gst_structure_remove_fields (st, "format", "colorimetry", "chroma-site",
--        NULL);
-+    features = gst_caps_features_new ("memory:GBM", NULL);
-+    gst_caps_set_features (acquired_caps, 0, features);
-   }
- 
 +  fixation_caps = gst_caps_copy (acquired_caps);
 +  st = gst_caps_get_structure (fixation_caps, 0);
-+  gst_structure_remove_fields (st, "format", "colorimetry", "chroma-site",
-+      NULL);
-+
+   /* GST_VIDEO_FORMAT_NV12_10LE32/V4L2_PIX_FMT_QC10C format is only available
+    * with ubwc compression and GBM memory. V4L2_PIX_FMT_QC10C pixformat is not
+    * available when the driver is probed during creation of template caps as the
+@@ -519,7 +520,7 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   }
+ 
+   alt_st = gst_structure_copy (st);
+-  gst_caps_append_structure_full (acquired_caps, alt_st,
++  gst_caps_append_structure_full (fixation_caps, alt_st,
+       gst_caps_features_new (GST_V4L2_CAPS_FEATURE_MEMORY_GBM, NULL));
+ 
    /* Probe currently available pixel formats */
-   available_caps = gst_caps_copy (self->probed_srccaps);
-   GST_DEBUG_OBJECT (self, "Available caps: %" GST_PTR_FORMAT, available_caps);
-@@ -522,10 +522,10 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+@@ -530,10 +531,10 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
     * with downstream, not coded size. */
    gst_caps_map_in_place (available_caps, gst_v4l2_video_remove_padding, self);
  
@@ -69,7 +64,7 @@ index ee481f4..fedc879 100644
    gst_caps_unref (available_caps);
    caps = gst_pad_peer_query_caps (decoder->srcpad, filter);
    gst_caps_unref (filter);
-@@ -536,6 +536,10 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+@@ -544,6 +545,10 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
      goto not_negotiated;
    }
  
@@ -79,7 +74,7 @@ index ee481f4..fedc879 100644
 +
    /* Fixate pixel format */
    caps = gst_caps_fixate (caps);
- 
+   has_gbm = gst_caps_features_contains (gst_caps_get_features (caps, 0),
 diff --git a/sys/v4l2/gstv4l2videoenc.c b/sys/v4l2/gstv4l2videoenc.c
 index fc554c0..00443e4 100644
 --- a/sys/v4l2/gstv4l2videoenc.c

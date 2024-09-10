@@ -1,4 +1,4 @@
-From 9739e82c77eb56b42dc04650a0beb29f88fe4528 Mon Sep 17 00:00:00 2001
+From ae343b2ed0f21be69039eda0db8f4585c06d5a75 Mon Sep 17 00:00:00 2001
 From: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
 Date: Sat, 10 Feb 2024 20:18:27 +0530
 Subject: [PATCH] v4l2: Support for controls and input formats
@@ -15,16 +15,16 @@ Signed-off-by: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
 ---
  sys/v4l2/ext/videodev2.h     |  1 +
  sys/v4l2/gstv4l2.c           |  8 ++++
- sys/v4l2/gstv4l2allocator.c  | 28 ++++++++++++--
+ sys/v4l2/gstv4l2allocator.c  | 28 ++++++++++--
  sys/v4l2/gstv4l2allocator.h  |  1 +
  sys/v4l2/gstv4l2bufferpool.c |  4 +-
  sys/v4l2/gstv4l2imagepool.c  |  8 ++--
- sys/v4l2/gstv4l2object.c     | 54 ++++++++++++++++++++++----
- sys/v4l2/gstv4l2object.h     |  1 +
- sys/v4l2/gstv4l2videodec.c   | 75 +++++++++++++++++++++++++++++++++++-
- sys/v4l2/gstv4l2videoenc.c   | 20 ++++++++--
+ sys/v4l2/gstv4l2object.c     | 54 +++++++++++++++++++----
+ sys/v4l2/gstv4l2object.h     |  3 ++
+ sys/v4l2/gstv4l2videodec.c   | 83 ++++++++++++++++++++++++++++++++++--
+ sys/v4l2/gstv4l2videoenc.c   | 20 +++++++--
  sys/v4l2/v4l2_calls.c        |  2 +-
- 11 files changed, 177 insertions(+), 25 deletions(-)
+ 11 files changed, 186 insertions(+), 26 deletions(-)
 
 diff --git a/sys/v4l2/ext/videodev2.h b/sys/v4l2/ext/videodev2.h
 index 93a138a..d968da8 100644
@@ -39,7 +39,7 @@ index 93a138a..d968da8 100644
  /* two non contiguous planes - one Y, one Cr + Cb interleaved  */
  #define V4L2_PIX_FMT_NV12M   v4l2_fourcc('N', 'M', '1', '2') /* 12  Y/CbCr 4:2:0  */
 diff --git a/sys/v4l2/gstv4l2.c b/sys/v4l2/gstv4l2.c
-index ec53bc9..b7ff559 100644
+index ec53bc9..979214f 100644
 --- a/sys/v4l2/gstv4l2.c
 +++ b/sys/v4l2/gstv4l2.c
 @@ -113,6 +113,14 @@ gst_v4l2_probe_template_caps (const gchar * device, gint video_fd,
@@ -51,7 +51,7 @@ index ec53bc9..b7ff559 100644
 +        alt_t = gst_structure_copy (template);
 +        gst_caps_append_structure (caps, alt_t);
 +        gst_caps_set_features (caps, gst_caps_get_size (caps) - 1,
-+            gst_caps_features_new ("memory:GBM", NULL));
++            gst_caps_features_new (GST_V4L2_CAPS_FEATURE_MEMORY_GBM, NULL));
 +      }
 +      GST_DEBUG ("caps = %" GST_PTR_FORMAT, caps);
      }
@@ -158,10 +158,10 @@ index 2166b6b..06c74b9 100644
  
  struct _GstV4l2MemoryGroup
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index c8a8f5d..1cfb673 100644
+index 825294d..acf2360 100644
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
-@@ -967,7 +967,7 @@ gst_v4l2_buffer_pool_start (GstBufferPool * bpool)
+@@ -970,7 +970,7 @@ gst_v4l2_buffer_pool_start (GstBufferPool * bpool)
    pool->size = size;
    pool->copy_threshold = copy_threshold;
    pool->max_latency = max_latency;
@@ -170,17 +170,17 @@ index c8a8f5d..1cfb673 100644
    pool->num_queued = 0;
  
    if (max_buffers != 0 && max_buffers < min_buffers)
-@@ -2074,7 +2074,7 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+@@ -2083,7 +2083,7 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
                GST_V4L2_IMPORT_QUARK);
  
            mem = gst_buffer_get_memory (tmp, 0);
 -          gst_memory_resize (mem, 0, gst_buffer_get_memory(*buf, 0)->size);
 +          gst_memory_resize (mem, 0, gst_buffer_peek_memory(*buf, 0)->size);
+           gst_memory_unref (mem);
  
            vmeta = gst_buffer_get_video_meta (tmp);
-           if (vmeta) {
 diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
-index 02f58aa..6f60140 100644
+index 463f425..3718ac7 100644
 --- a/sys/v4l2/gstv4l2imagepool.c
 +++ b/sys/v4l2/gstv4l2imagepool.c
 @@ -232,8 +232,8 @@ open_gbm_device (GstV4l2ImageBufferPool * vpool)
@@ -206,7 +206,7 @@ index 02f58aa..6f60140 100644
    if (priv->devfd < 0) {
      GST_ERROR_OBJECT (vpool, "Failed to open DMA device FD!");
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index 87f86da..2d14f1a 100644
+index 8402b6f..694e63d 100644
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
 @@ -160,6 +160,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
@@ -271,7 +271,7 @@ index 87f86da..2d14f1a 100644
 +
 +  alt_s2 = gst_structure_copy (structure);
 +  gst_caps_append_structure_full (caps, alt_s2,
-+      gst_caps_features_new ("memory:GBM", NULL));
++      gst_caps_features_new (GST_V4L2_CAPS_FEATURE_MEMORY_GBM, NULL));
  }
  
  static GstCaps *
@@ -351,10 +351,19 @@ index 87f86da..2d14f1a 100644
            obj->format.fmt.pix_mp.height, NULL);
      } else {
 diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
-index a6edbd3..4642c16 100644
+index a6edbd3..b5e11da 100644
 --- a/sys/v4l2/gstv4l2object.h
 +++ b/sys/v4l2/gstv4l2object.h
-@@ -334,6 +334,7 @@ gboolean     gst_v4l2_object_set_crop (GstV4l2Object * obj, struct v4l2_rect *re
+@@ -52,6 +52,8 @@ typedef struct _GstV4l2ObjectClassHelper GstV4l2ObjectClassHelper;
+ /* max frame width/height */
+ #define GST_V4L2_MAX_SIZE (1<<15) /* 2^15 == 32768 */
+ 
++#define GST_V4L2_CAPS_FEATURE_MEMORY_GBM "memory:GBM"
++
+ G_BEGIN_DECLS
+ 
+ #define GST_TYPE_V4L2_IO_MODE (gst_v4l2_io_mode_get_type ())
+@@ -334,6 +336,7 @@ gboolean     gst_v4l2_object_set_crop (GstV4l2Object * obj, struct v4l2_rect *re
  gboolean     gst_v4l2_open           (GstV4l2Object * v4l2object, GstV4l2Error * error);
  gboolean     gst_v4l2_dup            (GstV4l2Object * v4l2object, GstV4l2Object * other);
  gboolean     gst_v4l2_close          (GstV4l2Object * v4l2object);
@@ -363,17 +372,22 @@ index a6edbd3..4642c16 100644
  /* norm/input/output */
  gboolean     gst_v4l2_get_norm       (GstV4l2Object * v4l2object, v4l2_std_id * norm);
 diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
-index 403a0c8..ee481f4 100644
+index 403a0c8..fb27eac 100644
 --- a/sys/v4l2/gstv4l2videodec.c
 +++ b/sys/v4l2/gstv4l2videodec.c
-@@ -443,6 +443,7 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+@@ -441,10 +441,11 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   GstVideoInfo info;
+   GstVideoCodecState *output_state;
    GstCaps *acquired_caps, *available_caps, *caps, *filter;
-   GstStructure *st;
+-  GstStructure *st;
++  GstStructure *st, *alt_st;
    GstBufferPool *cpool;
-+  GstCapsFeatures *features;
    gboolean active;
    gboolean ret;
++  gboolean has_gbm = FALSE;
  
+   /* We don't allow renegotiation without careful disabling the pool */
+   cpool = gst_v4l2_object_get_buffer_pool (self->v4l2capture);
 @@ -459,6 +460,35 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
    self->v4l2capture->info.fps_d = self->v4l2output->info.fps_d;
    self->v4l2capture->info.fps_n = self->v4l2output->info.fps_n;
@@ -410,48 +424,64 @@ index 403a0c8..ee481f4 100644
    /* For decoders G_FMT returns coded size, G_SELECTION returns visible size
      * in the compose rectangle. gst_v4l2_object_acquire_format() checks both
      * and returns the visible size as with/height and the coded size as
-@@ -474,8 +504,15 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+@@ -474,8 +504,23 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
    acquired_caps = gst_video_info_to_caps (&info);
    GST_DEBUG_OBJECT (self, "Acquired caps: %" GST_PTR_FORMAT, acquired_caps);
    st = gst_caps_get_structure (acquired_caps, 0);
 -  gst_structure_remove_fields (st, "format", "colorimetry", "chroma-site",
 -      NULL);
 +
++  /* GST_VIDEO_FORMAT_NV12_10LE32/V4L2_PIX_FMT_QC10C format is only available
++   * with ubwc compression and GBM memory. V4L2_PIX_FMT_QC10C pixformat is not
++   * available when the driver is probed during creation of template caps as the
++   * default encoded format set on driver is H264 and 10-bit pix format are
++   * available only on H265 encoded format. */
 +  if (info.finfo->format == GST_VIDEO_FORMAT_NV12_10LE32) {
-+    features = gst_caps_features_new("memory:GBM", NULL);
-+    gst_caps_set_features(acquired_caps, 0, features);
 +    gst_structure_remove_fields (st, "colorimetry", "chroma-site", NULL);
++    gst_structure_set (st, "compression", G_TYPE_STRING, "ubwc", NULL);
 +  } else {
 +    gst_structure_remove_fields (st, "format", "colorimetry", "chroma-site",
 +        NULL);
 +  }
++
++  alt_st = gst_structure_copy (st);
++  gst_caps_append_structure_full (acquired_caps, alt_st,
++      gst_caps_features_new (GST_V4L2_CAPS_FEATURE_MEMORY_GBM, NULL));
  
    /* Probe currently available pixel formats */
    available_caps = gst_caps_copy (self->probed_srccaps);
-@@ -517,6 +554,22 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+@@ -501,6 +546,8 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+ 
+   /* Fixate pixel format */
+   caps = gst_caps_fixate (caps);
++  has_gbm = gst_caps_features_contains (gst_caps_get_features (caps, 0),
++      GST_V4L2_CAPS_FEATURE_MEMORY_GBM);
+ 
+   GST_DEBUG_OBJECT (self, "Chosen decoded caps: %" GST_PTR_FORMAT, caps);
+ 
+@@ -514,9 +561,21 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   output_state = gst_video_decoder_set_output_state (decoder,
+       info.finfo->format, info.width, info.height, self->input_state);
+ 
++  output_state->caps = gst_video_info_to_caps (&info);
++
++  if (info.finfo->format == GST_VIDEO_FORMAT_NV12_10LE32) {
++    st = gst_caps_get_structure (output_state->caps, 0);
++    gst_structure_set (st, "compression", G_TYPE_STRING, "ubwc", NULL);
++  }
++
++  if (has_gbm)
++    gst_caps_set_features_simple (output_state->caps,
++        gst_caps_features_new (GST_V4L2_CAPS_FEATURE_MEMORY_GBM, NULL));
++
    /* Copy the rest of the information, there might be more in the future */
    output_state->info.interlace_mode = info.interlace_mode;
    output_state->info.colorimetry = info.colorimetry;
 +
-+  /* GST_VIDEO_FORMAT_NV12_10LE32/V4L2_PIX_FMT_QC10C format is only available
-+     with ubwc compression and GBM memory. V4L2_PIX_FMT_QC10C pixformat is not
-+     available when the driver is probed during creation of template caps as the
-+     default encoded format set on driver is H264 and 10-bit pix format are
-+     available only on H265 encoded format. */
-+  if (info.finfo->format == GST_VIDEO_FORMAT_NV12_10LE32) {
-+    caps = gst_video_info_to_caps (&output_state->info);
-+    features = gst_caps_features_new ("memory:GBM", NULL);
-+    gst_caps_set_features (caps, 0, features);
-+    st = gst_caps_get_structure (caps, 0);
-+    gst_structure_set (st, "compression", G_TYPE_STRING, "ubwc", NULL);
-+    output_state->caps = gst_pad_peer_query_caps (decoder->srcpad, caps);
-+    gst_caps_unref (caps);
-+  }
-+
    gst_video_codec_state_unref (output_state);
  
    if (!GST_VIDEO_DECODER_CLASS (parent_class)->negotiate (decoder))
-@@ -1107,6 +1160,24 @@ gst_v4l2_video_dec_sink_getcaps (GstVideoDecoder * decoder, GstCaps * filter)
+@@ -1107,6 +1166,24 @@ gst_v4l2_video_dec_sink_getcaps (GstVideoDecoder * decoder, GstCaps * filter)
    GstV4l2VideoDec *self = GST_V4L2_VIDEO_DEC (decoder);
    GstCaps *result;
  

@@ -1,0 +1,128 @@
+From 7575f84cc708c1c64e86a6723bde5a79fc572281 Mon Sep 17 00:00:00 2001
+From: ppachang <quic_ppachang@quicinc.com>
+Date: Thu, 11 Jul 2024 15:27:42 +0530
+Subject: [PATCH] v4l2: Add support for AV1 decoder
+
+ - Add support for AV1 decoder
+ - Update EOS handling with v4l2 last buffer flag and drop
+   zero size buffers on capture queue.
+
+Signed-off-by: ppachang <quic_ppachang@quicinc.com>
+
+---
+ sys/v4l2/ext/videodev2.h     |  1 +
+ sys/v4l2/gstv4l2allocator.c  | 14 +++++++++++---
+ sys/v4l2/gstv4l2bufferpool.c | 10 +++++-----
+ sys/v4l2/gstv4l2object.c     |  6 ++++++
+ sys/v4l2/gstv4l2videodec.c   |  2 ++
+ 5 files changed, 25 insertions(+), 8 deletions(-)
+
+diff --git a/sys/v4l2/ext/videodev2.h b/sys/v4l2/ext/videodev2.h
+index d968da8..f580815 100644
+--- a/sys/v4l2/ext/videodev2.h
++++ b/sys/v4l2/ext/videodev2.h
+@@ -701,6 +701,7 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_VP9      v4l2_fourcc('V', 'P', '9', '0') /* VP9 */
+ #define V4L2_PIX_FMT_VP9_FRAME v4l2_fourcc('V', 'P', '9', 'F') /* VP9 parsed frame */
+ #define V4L2_PIX_FMT_HEVC     v4l2_fourcc('H', 'E', 'V', 'C') /* HEVC aka H.265 */
++#define V4L2_PIX_FMT_AV1     v4l2_fourcc('A', 'V', '1', '0') /* AV1 */
+ #define V4L2_PIX_FMT_FWHT     v4l2_fourcc('F', 'W', 'H', 'T') /* Fast Walsh Hadamard Transform (vicodec) */
+ #define V4L2_PIX_FMT_FWHT_STATELESS     v4l2_fourcc('S', 'F', 'W', 'H') /* Stateless FWHT (vicodec) */
+ #define V4L2_PIX_FMT_H264_SLICE v4l2_fourcc('S', '2', '6', '4') /* H264 parsed slices */
+diff --git a/sys/v4l2/gstv4l2allocator.c b/sys/v4l2/gstv4l2allocator.c
+index f9deabf..db8619f 100644
+--- a/sys/v4l2/gstv4l2allocator.c
++++ b/sys/v4l2/gstv4l2allocator.c
+@@ -1412,6 +1412,17 @@ gst_v4l2_allocator_dqbuf (GstV4l2Allocator * allocator,
+   if (obj->ioctl (obj->video_fd, VIDIOC_DQBUF, &buffer) < 0)
+     goto error;
+ 
++  GST_LOG_OBJECT (allocator, "dequeued buffer %i (flags 0x%X)", buffer.index,
++      buffer.flags);
++
++  /* Default implementation to check for EOS is with driver returning EPIPE
++   * error after last 0 bytesize buffer is dequeued. But the video driver is
++   * not signalling the poll after last buffer is dequeued. This is causing the
++   * client to wait infinetly. So check for v4l2 last buffer flag on EOS buffer.
++   */
++  if (buffer.flags & V4L2_BUF_FLAG_LAST)
++    return GST_V4L2_FLOW_LAST_BUFFER;
++
+   group = allocator->groups[buffer.index];
+ 
+   if (!IS_QUEUED (group->buffer)) {
+@@ -1422,9 +1433,6 @@ gst_v4l2_allocator_dqbuf (GstV4l2Allocator * allocator,
+ 
+   group->buffer = buffer;
+ 
+-  GST_LOG_OBJECT (allocator, "dequeued buffer %i (flags 0x%X)", buffer.index,
+-      buffer.flags);
+-
+   if (IS_QUEUED (group->buffer)) {
+     GST_DEBUG_OBJECT (allocator,
+         "driver pretends buffer is queued even if dequeue succeeded");
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index acf2360..b7323c6 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -2072,11 +2072,11 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+               goto acquire_failed;
+           }
+ 
+-          /* An empty buffer on capture indicates the end of stream */
+-          if (gst_buffer_get_size (*buf) == 0) {
+-            gst_v4l2_buffer_pool_resize_buffer (bpool, *buf);
+-            goto eos;
+-          }
++          /* NOTE: Discard empty buffers from capture queue. In case of certain
++           * no show frames, video driver is not sending these buffers to be
++           * dropped with respective flags instead the bytesused is 0.*/
++          if (gst_buffer_get_size (*buf) == 0)
++            goto buffer_truncated;
+ 
+           /* Replace our buffer with downstream allocated buffer */
+           tmp = gst_mini_object_steal_qdata (GST_MINI_OBJECT (*buf),
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 694e63d..4065922 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -188,6 +188,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
+   {V4L2_PIX_FMT_VC1_ANNEX_L, FALSE, GST_V4L2_CODEC},
+   {V4L2_PIX_FMT_VP8, FALSE, GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
+   {V4L2_PIX_FMT_VP9, FALSE, GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
++  {V4L2_PIX_FMT_AV1, FALSE, GST_V4L2_CODEC},
+ 
+   /*  Vendor-specific formats   */
+   {V4L2_PIX_FMT_WNVA, TRUE, GST_V4L2_CODEC},
+@@ -1526,6 +1527,9 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
+     case V4L2_PIX_FMT_VP9:
+       structure = gst_structure_new_empty ("video/x-vp9");
+       break;
++    case V4L2_PIX_FMT_AV1:
++      structure = gst_structure_new_empty ("video/x-av1");
++      break;
+     case V4L2_PIX_FMT_GREY:    /*  8  Greyscale     */
+     case V4L2_PIX_FMT_Y16:
+     case V4L2_PIX_FMT_Y16_BE:
+@@ -1954,6 +1958,8 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+       fourcc = V4L2_PIX_FMT_VP8;
+     } else if (g_str_equal (mimetype, "video/x-vp9")) {
+       fourcc = V4L2_PIX_FMT_VP9;
++    } else if (g_str_equal (mimetype, "video/x-av1")) {
++      fourcc = V4L2_PIX_FMT_AV1;
+     } else if (g_str_equal (mimetype, "video/x-bayer")) {
+       const gchar *format = gst_structure_get_string (structure, "format");
+       if (format) {
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 070c387..7553178 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -1431,6 +1431,8 @@ G_STMT_START { \
+   } else if (gst_structure_has_name (s, "video/x-vp9")) {
+     SET_META ("VP9");
+     cdata->codec = gst_v4l2_vp9_get_codec ();
++  } else if (gst_structure_has_name (s, "video/x-av1")) {
++    SET_META ("AV1");
+   } else if (gst_structure_has_name (s, "video/x-bayer")) {
+     SET_META ("BAYER");
+   } else if (gst_structure_has_name (s, "video/x-sonix")) {

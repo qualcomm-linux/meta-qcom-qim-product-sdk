@@ -36,6 +36,7 @@ function main() {
 
     rm -rf $PKG_LIST_FILE
     rm -rf ${QIM_PKG_DIR}
+    rm -rf /home/root/.cache/gstreamer-1.0/registry.aarch64.bin
 }
 
 main "$@"

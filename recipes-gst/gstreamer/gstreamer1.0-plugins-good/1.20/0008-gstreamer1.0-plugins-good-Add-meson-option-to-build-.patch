@@ -1,0 +1,170 @@
+From 1c6f3cbe56a4091f51c62e82ffd38cde7d1ff4eb Mon Sep 17 00:00:00 2001
+From: Ivan Evlogiev <quic_ievlogie@quicinc.com>
+Date: Wed, 22 May 2024 13:16:06 +0000
+Subject: [PATCH 8/8] gstreamer1.0-plugins-good: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    sys/v4l2
+    ext/qt
+    gst/avi
+
+Signed-off-by: Ivan Evlogiev <quic_ievlogie@quicinc.com>
+---
+ ext/meson.build   | 48 +++++++++++++++++++++++++----------------------
+ gst/meson.build   | 24 +++++++++++++++---------
+ meson.build       |  8 ++++++--
+ meson_options.txt |  4 ++++
+ sys/meson.build   | 22 +++++++++++++---------
+ 5 files changed, 64 insertions(+), 42 deletions(-)
+
+diff --git a/ext/meson.build b/ext/meson.build
+index 6f5594e..847895f 100644
+--- a/ext/meson.build
++++ b/ext/meson.build
+@@ -1,22 +1,26 @@
+-subdir('aalib')
+-subdir('cairo')
+-subdir('flac')
+-subdir('gdk_pixbuf')
+-subdir('gtk')
+-subdir('jack')
+-subdir('jpeg')
+-subdir('lame')
+-subdir('libcaca')
+-subdir('dv')
+-subdir('libpng')
+-subdir('mpg123')
+-subdir('raw1394')
+-subdir('qt')
+-subdir('pulse')
+-subdir('shout2')
+-subdir('soup')
+-subdir('speex')
+-subdir('taglib')
+-subdir('twolame')
+-subdir('vpx')
+-subdir('wavpack')
++if build_all_plugins
++  subdir('aalib')
++  subdir('cairo')
++  subdir('flac')
++  subdir('gdk_pixbuf')
++  subdir('gtk')
++  subdir('jack')
++  subdir('jpeg')
++  subdir('lame')
++  subdir('libcaca')
++  subdir('dv')
++  subdir('libpng')
++  subdir('mpg123')
++  subdir('raw1394')
++  subdir('qt')
++  subdir('pulse')
++  subdir('shout2')
++  subdir('soup')
++  subdir('speex')
++  subdir('taglib')
++  subdir('twolame')
++  subdir('vpx')
++  subdir('wavpack')
++else
++  subdir('qt')
++endif
+diff --git a/gst/meson.build b/gst/meson.build
+index cbc28ca..88d4e15 100644
+--- a/gst/meson.build
++++ b/gst/meson.build
+@@ -1,12 +1,18 @@
+-foreach plugin : ['alpha', 'apetag', 'audiofx', 'audioparsers', 'auparse',
+-                  'autodetect', 'avi', 'cutter', 'debugutils', 'deinterlace',
+-                  'dtmf', 'effectv', 'equalizer', 'flv', 'flx', 'goom',
+-                  'goom2k1', 'icydemux', 'id3demux', 'imagefreeze',
+-                  'interleave', 'isomp4', 'law', 'level', 'matroska',
+-                  'monoscope', 'multifile', 'multipart', 'replaygain', 'rtp',
+-                  'rtpmanager', 'rtsp', 'shapewipe', 'smpte', 'spectrum',
+-                  'udp', 'videobox', 'videocrop', 'videofilter', 'videomixer',
+-                  'wavenc', 'wavparse', 'y4m']
++gst_plugins = ['avi']
++
++if build_all_plugins
++  gst_plugins = ['alpha', 'apetag', 'audiofx', 'audioparsers', 'auparse',
++                'autodetect', 'avi', 'cutter', 'debugutils', 'deinterlace',
++                'dtmf', 'effectv', 'equalizer', 'flv', 'flx', 'goom',
++                'goom2k1', 'icydemux', 'id3demux', 'imagefreeze',
++                'interleave', 'isomp4', 'law', 'level', 'matroska',
++                'monoscope', 'multifile', 'multipart', 'replaygain', 'rtp',
++                'rtpmanager', 'rtsp', 'shapewipe', 'smpte', 'spectrum',
++                'udp', 'videobox', 'videocrop', 'videofilter', 'videomixer',
++                'wavenc', 'wavparse', 'y4m']
++endif
++
++foreach plugin : gst_plugins
+   if not get_option(plugin).disabled()
+     subdir(plugin)
+   endif
+diff --git a/meson.build b/meson.build
+index 41ea23a..d5240cc 100644
+--- a/meson.build
++++ b/meson.build
+@@ -442,11 +442,15 @@ if get_option('default_library') == 'shared'
+   plugins_pkgconfig_install_dir = disabler()
+ endif
+ 
++build_all_plugins = get_option('build_all_plugins')
++
+ subdir('gst')
+ subdir('sys')
+ subdir('ext')
+-subdir('tests')
+-subdir('docs')
++if build_all_plugins
++  subdir('tests')
++  subdir('docs')
++endif
+ 
+ if have_orcc and orc_targets.length() > 0
+   update_orc_dist_files = find_program('scripts/update-orc-dist-files.py')
+diff --git a/meson_options.txt b/meson_options.txt
+index 3dafe1f..3dde2c0 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -111,3 +111,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build_all_plugins', type: 'boolean', value: true,
++       description: 'Enable build of all plugins')
+diff --git a/sys/meson.build b/sys/meson.build
+index d337015..32ee353 100644
+--- a/sys/meson.build
++++ b/sys/meson.build
+@@ -1,9 +1,13 @@
+-subdir('directsound')
+-subdir('oss')
+-subdir('oss4')
+-subdir('osxaudio')
+-subdir('osxvideo')
+-subdir('rpicamsrc')
+-subdir('v4l2')
+-subdir('waveform')
+-subdir('ximage')
++if build_all_plugins
++  subdir('directsound')
++  subdir('oss')
++  subdir('oss4')
++  subdir('osxaudio')
++  subdir('osxvideo')
++  subdir('rpicamsrc')
++  subdir('v4l2')
++  subdir('waveform')
++  subdir('ximage')
++else
++  subdir('v4l2')
++endif
+-- 
+2.34.1
+

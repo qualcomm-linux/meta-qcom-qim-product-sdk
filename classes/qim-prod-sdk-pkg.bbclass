@@ -22,15 +22,9 @@ python __anonymous () {
 }
 
 GST_ML_PLUGINS = " \
-        gstreamer1.0-plugins-qcom-oss-mlsnpe:do_package_write_ipk \
-        gstreamer1.0-plugins-qcom-oss-mlqnn:do_package_write_ipk \
-        gstreamer1.0-plugins-qcom-oss-mltflite:do_package_write_ipk \
-    "
-
-GST_ML_PLUGINS:remove:qcs9100 = " \
-        gstreamer1.0-plugins-qcom-oss-mlsnpe:do_package_write_ipk \
-        gstreamer1.0-plugins-qcom-oss-mlqnn:do_package_write_ipk \
-        gstreamer1.0-plugins-qcom-oss-mltflite:do_package_write_ipk \
+        qcom-gstreamer1.0-plugins-oss-mlsnpe:do_package_write_ipk \
+        qcom-gstreamer1.0-plugins-oss-mlqnn:do_package_write_ipk \
+        qcom-gstreamer1.0-plugins-oss-mltflite:do_package_write_ipk \
     "
 
 addtask do_generate_qim_prod_sdk_setscene
@@ -40,12 +34,12 @@ do_generate_qim_prod_sdk[dirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_prod_sdk[cleandirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_qim_prod_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
 do_generate_qim_prod_sdk[depends] = " \
-         qim-product-sdk:do_patch \
-         snpe:do_package_write_ipk \
-         qnn:do_package_write_ipk \
+         qcom-qim-product-sdk:do_patch \
+         qcom-snpe-sdk:do_package_write_ipk \
+         qcom-qnn-sdk:do_package_write_ipk \
          ${GST_ML_PLUGINS} \
-         qim-sdk:do_generate_qim_sdk \
-         tflite-sdk:do_generate_tflite_sdk \
+         qcom-qim-sdk:do_generate_qim_sdk \
+         qcom-tflite-sdk:do_generate_tflite_sdk \
    "
 
 # Add a task to generate qim product sdk
@@ -104,7 +98,7 @@ def get_pkgs_list(d):
     for _, pkgdirs, _ in os.walk(os.path.join(deploydir, pkgtype)):
         for pkgdir in pkgdirs:
             for f in os.listdir(os.path.join(deploydir, pkgtype, pkgdir)):
-                if "qnn" in os.path.basename(f) or "snpe" in os.path.basename(f):
+                if "qnn" in os.path.basename(f) or "snpe" in os.path.basename(f) or "mltflite" in os.path.basename(f):
                     pkgslist.append(os.path.join(deploydir, pkgtype, pkgdir, f))
     return " \\\n ".join(pkgslist)
 
@@ -112,6 +106,6 @@ python do_generate_qim_prod_sdk_setscene() {
     sstate_setscene(d)
 }
 
-do_cleanall[depends] = "qim-sdk:do_cleanall tflite-sdk:do_cleanall"
+do_cleanall[depends] = "qcom-qim-sdk:do_cleanall qcom-tflite-sdk:do_cleanall"
 
 RM_WORK_EXCLUDE += "${PN}"

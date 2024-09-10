@@ -41,10 +41,10 @@ repo sync
 
 ## Examples
 
-To download the `qcom-6.6.28-QLI.1.1-Ver.1.1` release
+To download the `qcom-6.6.38-QLI.1.2-Ver.1.0` release
 
 ```shell
-repo init -u https://github.com/quic-yocto/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.28-QLI.1.1-Ver.1.1.xml
+repo init -u https://github.com/quic-yocto/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.38-QLI.1.2-Ver.1.0.xml
 repo sync
 ```
 
@@ -58,9 +58,9 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.28-QLI.1.1-Ver.1.1_qim-product-sdk-1.1.3` release tag
+To download the `qcom-6.6.38-QLI.1.2-Ver.1.0_qim-product-sdk-1.1.1` release tag
 ```shell
-git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.28-QLI.1.1-Ver.1.1_qim-product-sdk-1.1.3 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.38-QLI.1.2-Ver.1.0_qim-product-sdk-1.1.1 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
@@ -68,7 +68,7 @@ git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.28
 ```shell
 export SHELL=/bin/bash
 export EXTRALAYERS="meta-qcom-qim-product-sdk"
-MACHINE=qcm6490 DISTRO=qcom-wayland source setup-environment
+MACHINE=qcs6490-rb3gen2-vision-kit DISTRO=qcom-wayland source setup-environment
 ```
 
 Run the following command to compile and generate flashable image with Yocto Project BSP plus QIM Product SDK layers
@@ -80,7 +80,7 @@ Image output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/images/qcm6490
 ## To generate QIM Product SDK artifacts
 
 ```shell
-bitbake qim-product-sdk
+bitbake qcom-qim-product-sdk
 ```
 QIM Product SDK output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/qim_prod_sdk_artifacts.
 
@@ -96,13 +96,13 @@ Standard SDK:
 ```shell
 bitbake -c do_populate_sdk qcom-multimedia-image
 ```
-Standard SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcm6490-toolchain-1.0.sh
+Standard SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcs6490-rb3gen2-vision-kit-toolchain-1.0.sh
 
 Extensible SDK:
 ```shell
 bitbake -c do_populate_sdk_ext qcom-multimedia-image
 ```
-Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcm6490-toolchain-ext-1.0.sh
+Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcs6490-rb3gen2-vision-kit-toolchain-ext-1.0.sh
 
 # Reference
 

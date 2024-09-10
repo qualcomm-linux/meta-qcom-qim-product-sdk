@@ -1,24 +1,25 @@
-From 36a738e9ec1ff7caa63005dc4794c5170543483e Mon Sep 17 00:00:00 2001
+From c76f3b40f8db1c1484dd3b74671a3eabe4720a5b Mon Sep 17 00:00:00 2001
 From: ppachang <quic_ppachang@quicinc.com>
 Date: Sat, 28 Oct 2023 16:42:14 +0530
 Subject: [PATCH] v4l2 : Add support for dma memory allocation
 
 Signed-off-by: ppachang <quic_ppachang@quicinc.com>
+Signed-off-by: iraj <quic_iraj@quicinc.com>
 
 ---
  sys/v4l2/ext/videodev2.h     |   1 +
  sys/v4l2/gstv4l2allocator.c  |  78 +++-
  sys/v4l2/gstv4l2allocator.h  |   9 +
- sys/v4l2/gstv4l2bufferpool.c |  81 ++++-
+ sys/v4l2/gstv4l2bufferpool.c |  87 ++++-
  sys/v4l2/gstv4l2bufferpool.h |   2 +
- sys/v4l2/gstv4l2imagepool.c  | 667 +++++++++++++++++++++++++++++++++++
+ sys/v4l2/gstv4l2imagepool.c  | 669 +++++++++++++++++++++++++++++++++++
  sys/v4l2/gstv4l2imagepool.h  | 134 +++++++
  sys/v4l2/gstv4l2object.c     |  61 +++-
  sys/v4l2/gstv4l2object.h     |   1 +
  sys/v4l2/gstv4l2videodec.c   |   2 +-
  sys/v4l2/gstv4l2videoenc.c   |  40 ++-
  sys/v4l2/meson.build         |   3 +-
- 12 files changed, 1060 insertions(+), 19 deletions(-)
+ 12 files changed, 1067 insertions(+), 20 deletions(-)
  create mode 100644 sys/v4l2/gstv4l2imagepool.c
  create mode 100644 sys/v4l2/gstv4l2imagepool.h
 
@@ -208,7 +209,7 @@ index eb51524..2166b6b 100644
  
  #endif /* __GST_V4L2_ALLOCATOR_H__ */
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index 4de1da4..8c63de1 100644
+index 4de1da4..a221529 100644
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
 @@ -46,12 +46,16 @@
@@ -228,7 +229,7 @@ index 4de1da4..8c63de1 100644
  
  /*
   * GstV4l2BufferPool:
-@@ -369,6 +373,11 @@ gst_v4l2_buffer_pool_import_dmabuf (GstV4l2BufferPool * pool,
+@@ -369,10 +373,18 @@ gst_v4l2_buffer_pool_import_dmabuf (GstV4l2BufferPool * pool,
    for (i = 0; i < n_mem; i++)
      dma_mem[i] = gst_buffer_peek_memory (src, i);
  
@@ -238,9 +239,17 @@ index 4de1da4..8c63de1 100644
 +  }
 +
    if (!gst_v4l2_allocator_import_dmabuf (pool->vallocator, group, n_mem,
-           dma_mem))
+-          dma_mem))
++      dma_mem))
      goto import_failed;
-@@ -776,6 +785,46 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
+ 
++  if (group->n_mem == 1 && gst_buffer_n_memory (src) > 1)
++    gst_memory_unref (dma_mem[0]);
++
+   gst_mini_object_set_qdata (GST_MINI_OBJECT (dest), GST_V4L2_IMPORT_QUARK,
+       gst_buffer_ref (src), (GDestroyNotify) gst_buffer_unref);
+ 
+@@ -776,6 +788,46 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
    }
  }
  
@@ -287,7 +296,7 @@ index 4de1da4..8c63de1 100644
  static gboolean
  gst_v4l2_buffer_pool_start (GstBufferPool * bpool)
  {
-@@ -1692,7 +1741,10 @@ gst_v4l2_buffer_pool_complete_release_buffer (GstBufferPool * bpool,
+@@ -1692,7 +1744,10 @@ gst_v4l2_buffer_pool_complete_release_buffer (GstBufferPool * bpool,
                  GST_V4L2_IMPORT_QUARK, NULL, NULL);
  
              /* reset to default size */
@@ -299,7 +308,7 @@ index 4de1da4..8c63de1 100644
  
              /* playback, put the buffer back in the queue to refill later. */
              pclass->release_buffer (bpool, buffer);
-@@ -2091,11 +2143,38 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+@@ -2091,11 +2146,39 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
          case GST_V4L2_IO_DMABUF_IMPORT:
          {
            GstBuffer *tmp;
@@ -328,6 +337,7 @@ index 4de1da4..8c63de1 100644
  
 +          mem = gst_buffer_get_memory (tmp, 0);
 +          gst_memory_resize (mem, 0, gst_buffer_get_memory(*buf, 0)->size);
++          gst_memory_unref (mem);
 +
 +          vmeta = gst_buffer_get_video_meta (tmp);
 +          if (vmeta) {
@@ -353,10 +363,10 @@ index 60340c2..19c96c3 100644
  void                gst_v4l2_buffer_pool_set_other_pool (GstV4l2BufferPool * pool,
 diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
 new file mode 100644
-index 0000000..2e0e7ce
+index 0000000..463f425
 --- /dev/null
 +++ b/sys/v4l2/gstv4l2imagepool.c
-@@ -0,0 +1,667 @@
+@@ -0,0 +1,669 @@
 +/*
 + * Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
 + *
@@ -791,19 +801,28 @@ index 0000000..2e0e7ce
 +  }
 +
 +  if (!gst_buffer_pool_config_get_allocator (config, &allocator, &params)) {
-+    GST_ERROR_OBJECT (vpool, "Allocator missing from configuration!");
++    GST_ERROR_OBJECT (vpool, "Pool config is not valid!");
 +    return FALSE;
-+  } else if (NULL == allocator) {
-+    // No allocator set in configuration, create default FD allocator.
-+    if (NULL == (allocator = gst_dmabuf_allocator_new ())) {
++  } else if (NULL != allocator) {
++    // Allocator set in configuration, save in priv.
++    if (!GST_IS_FD_ALLOCATOR (allocator)) {
++      GST_ERROR_OBJECT (vpool, "Allocator %p is not FD backed!", allocator);
++      return FALSE;
++    }
++
++    if (priv->allocator)
++      gst_object_unref (priv->allocator);
++
++    priv->allocator = gst_object_ref (allocator);
++  }
++
++  if (NULL == priv->allocator) {
++    // No allocator set in configuration and none saved in priv,
++    // create default FD allocator.
++    if (NULL == (priv->allocator = gst_dmabuf_allocator_new ())) {
 +      GST_ERROR_OBJECT (vpool, "Failed to create FD allocator!");
 +      return FALSE;
 +    }
-+  }
-+
-+  if (!GST_IS_FD_ALLOCATOR (allocator)) {
-+     GST_ERROR_OBJECT (vpool, "Allocator %p is not FD backed!", allocator);
-+     return FALSE;
 +  }
 +
 +  GST_DEBUG_OBJECT (pool, "Video dimensions %dx%d, caps %" GST_PTR_FORMAT,
@@ -847,13 +866,6 @@ index 0000000..2e0e7ce
 +
 +    priv->info.size = MAX (size, priv->info.size);
 +  }
-+
-+  // Remove cached allocator.
-+  if (priv->allocator)
-+    gst_object_unref (priv->allocator);
-+
-+  priv->allocator = allocator;
-+  gst_object_ref (priv->allocator);
 +
 +  // Enable metadata based on configuration of the pool.
 +  priv->addmeta = gst_buffer_pool_config_has_option (config,

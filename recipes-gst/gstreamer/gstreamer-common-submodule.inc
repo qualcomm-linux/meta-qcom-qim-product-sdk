@@ -1,6 +1,6 @@
 #common project used in plugin bb.
 
-do_patch:append() {
+do_patch:append:qcom-custom-bsp() {
     bb.build.exec_func('do_clone_gst_common', d)
 }
 

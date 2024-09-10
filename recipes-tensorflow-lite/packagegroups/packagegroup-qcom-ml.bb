@@ -11,13 +11,13 @@ PACKAGES = " \
     ${PN}-tflite \
     "
 
-RDEPENDS:${PN} = " \
+RDEPENDS:${PN}:qcom-custom-bsp = " \
     ${PN}-tflite \
     libgomp-dev \
-    qnn \
-    snpe \
+    qcom-qnn-sdk \
+    qcom-snpe-sdk \
     "
 
-RDEPENDS:${PN}-tflite = " \
+RDEPENDS:${PN}-tflite:qcom-custom-bsp = " \
     tensorflow-lite \
     "

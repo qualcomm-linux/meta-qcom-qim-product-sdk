@@ -10,6 +10,8 @@ python __anonymous () {
     package_type = d.getVar("IMAGE_PKGTYPE", True)
     if package_type == "ipk":
         bb.build.addtask('do_generate_tflite_sdk', 'do_package_write_ipk', 'do_packagedata' , d)
+    if package_type == "deb":
+        bb.build.addtask('do_generate_tflite_sdk', 'do_package_write_deb', 'do_packagedata' , d)
 }
 
 addtask do_generate_tflite_sdk_setscene
@@ -19,9 +21,9 @@ do_generate_tflite_sdk[dirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_tflite_sdk[cleandirs] = "${SSTATE_IN_DIR} ${SSTATE_OUT_DIR}"
 do_generate_tflite_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
 do_generate_tflite_sdk[depends] = " \
-    tensorflow-lite:do_package_write_ipk \
-    tflite-sdk:do_patch \
-    "
+    qcom-tflite-sdk:do_patch \
+    ${@bb.utils.contains('PRODUCT', 'ubuntu', "tensorflow-lite:do_package_write_deb", "tensorflow-lite:do_package_write_ipk", d)} \
+"
 
 # Add a task to generate Tflite sdk
 do_generate_tflite_sdk () {
