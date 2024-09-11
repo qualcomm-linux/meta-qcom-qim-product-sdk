@@ -15,7 +15,3 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     packagegroup-qcom-gst \
     packagegroup-qcom-ml \
   "
-
-RDEPENDS:${PN}:remove:qcs9100 = " packagegroup-qcom-gst"
-RDEPENDS:${PN}:remove:qcs9100 = " packagegroup-qcom-ml"
-RDEPENDS:${PN}:append:qcs9100 = " packagegroup-qcom-gst-basic"
