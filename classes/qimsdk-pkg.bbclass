@@ -18,6 +18,7 @@ python __anonymous () {
 GST_PLUGINS = " \
     gstd:do_package_write_ipk \
     gstreamer1.0:do_package_write_ipk \
+    gstreamer1.0-python:do_package_write_ipk \
     gstreamer1.0-plugins-base:do_package_write_ipk \
     gstreamer1.0-plugins-good:do_package_write_ipk \
     gstreamer1.0-plugins-bad:do_package_write_ipk \
@@ -47,6 +48,7 @@ GST_PLUGINS = " \
     qcom-gstreamer1.0-plugins-oss-voverlay:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-vsplit:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-vtransform:do_package_write_ipk \
+    qcom-gstreamer1.0-oss-python-examples:do_package_write_ipk \
   "
 
 GST_PLUGINS:remove:qcs9100 = " \
@@ -110,7 +112,6 @@ GST_SAMPLE_APPS:remove:qcs9100 = " \
     qcom-gst-camera-switch-example:do_package_write_ipk \
     qcom-gst-multi-camera-example:do_package_write_ipk \
     qcom-gst-multi-stream-example:do_package_write_ipk \
-    qcom-gst-smartcodec-example:do_package_write_ipk \
     qcom-gst-snapshot-stream-example:do_package_write_ipk \
     qcom-gst-usb-single-camera-app:do_package_write_ipk \
     qcom-gst-video-playback-example:do_package_write_ipk \

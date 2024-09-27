@@ -15,7 +15,7 @@ DEPENDS += "libsoup-2.4"
 DEPENDS += "qcom-gst-sample-apps-utils"
 DEPENDS:append:qcm6490 = " qcom-camera-server"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c7328821abdcb59ab2216357946cc3931b3638e3;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-sample-apps/gst-audio-video-encode"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=9738171ffc03effaa22e2c4508833544b8879404;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-sample-apps/gst-audio-video-encode"
 S = "${WORKDIR}/gst-audio-video-encode"
 
 # Install directries.

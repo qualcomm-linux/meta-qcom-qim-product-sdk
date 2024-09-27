@@ -66,7 +66,6 @@ RDEPENDS:${PN}:remove:qcs9100 = " \
     qcom-gst-camera-switch-example \
     qcom-gst-multi-camera-example \
     qcom-gst-multi-stream-example \
-    qcom-gst-smartcodec-example \
     qcom-gst-snapshot-stream-example \
     qcom-gst-usb-single-camera-app \
     qcom-gst-video-playback-example \
