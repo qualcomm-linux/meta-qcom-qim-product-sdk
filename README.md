@@ -86,7 +86,7 @@ QIM Product SDK output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/qim_
 
 # Flash image
 
-To flash the generated build, see the [Flash software](https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-254/flash_images.html)
+To flash the generated build, see the [Flash images](https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-254/flash_images.html?vproduct=1601111740013072&versionId=35c3bc73-6ae0-4179-b66b-a01844b5a87f)
 
 # Generate Standard SDK and Extensible SDK for Standalone Application Development
 
