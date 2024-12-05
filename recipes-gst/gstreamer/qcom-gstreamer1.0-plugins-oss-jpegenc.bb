@@ -12,7 +12,7 @@ DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
 DEPENDS += "qmmf-sdk"
 
-SRC_URI =+ "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=9738171ffc03effaa22e2c4508833544b8879404;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-jpegenc"
+SRC_URI =+ "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c8a7eb64a9fd96de0d205ce7604211f3768f83c5;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-jpegenc"
 S = "${WORKDIR}/gst-plugin-jpegenc"
 
 # Install directries.

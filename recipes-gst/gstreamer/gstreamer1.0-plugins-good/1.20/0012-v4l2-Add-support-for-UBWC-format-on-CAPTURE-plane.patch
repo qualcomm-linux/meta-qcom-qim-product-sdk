@@ -1,0 +1,188 @@
+From d41669ebd58c14f4a1e1f4378060e73de7e81f45 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Mon, 11 Nov 2024 11:13:50 +0530
+Subject: [PATCH] v4l2: Add support for UBWC format on CAPTURE plane
+
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+
+---
+ sys/v4l2/gstv4l2bufferpool.c |  4 +++
+ sys/v4l2/gstv4l2imagepool.c  | 47 ++++++++++++++++++++++++++++++++++++
+ sys/v4l2/gstv4l2imagepool.h  |  7 ++++++
+ sys/v4l2/gstv4l2object.c     | 11 ++++++---
+ sys/v4l2/gstv4l2object.h     |  2 ++
+ 5 files changed, 68 insertions(+), 3 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 4c282e2..17ed30a 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -829,6 +829,10 @@ gst_v4l2_buffer_pool_create_dma_pool (GstV4l2Object * obj, GstCaps * caps)
+   gst_buffer_pool_config_add_option (config, GST_BUFFER_POOL_OPTION_VIDEO_META);
+   gst_buffer_pool_config_add_option (config,
+       GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
++  
++  if (obj->is_ubwc)
++    gst_buffer_pool_config_add_option (config,
++        GST_V4L2_IMAGE_BUFFER_POOL_OPTION_UBWC_MODE);
+ 
+   if (!gst_buffer_pool_set_config (pool, config)) {
+     GST_ERROR_OBJECT (obj->dbg_obj, "Failed to set pool configuration !");
+diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
+index 030187d..fc5d2b7 100644
+--- a/sys/v4l2/gstv4l2imagepool.c
++++ b/sys/v4l2/gstv4l2imagepool.c
+@@ -89,6 +89,7 @@ struct _GstV4l2ImageBufferPoolPrivate
+ {
+   GstVideoInfo        info;
+   gboolean            addmeta;
++  gboolean            isubwc;
+   gboolean            keepmapped;
+ 
+   GstAllocator        *allocator;
+@@ -277,6 +278,9 @@ gbm_device_alloc (GstV4l2ImageBufferPool * vpool)
+   else if (GST_VIDEO_INFO_FORMAT (&priv->info) == GST_VIDEO_FORMAT_NV12_10LE32)
+     usage |= GBM_BO_USAGE_10BIT_TP_QTI;
+ 
++  if (priv->isubwc)
++    usage |= GBM_BO_USAGE_UBWC_ALIGNED_QTI;
++
+   bo = priv->gbm_bo_create (priv->gbmdevice, GST_VIDEO_INFO_WIDTH (&priv->info),
+        GST_VIDEO_INFO_HEIGHT (&priv->info), format, usage);
+   if (NULL == bo) {
+@@ -390,6 +394,7 @@ gst_v4l2_image_buffer_pool_get_options (GstBufferPool * pool)
+ {
+   static const gchar *options[] = {
+     GST_BUFFER_POOL_OPTION_VIDEO_META,
++    GST_V4L2_IMAGE_BUFFER_POOL_OPTION_UBWC_MODE,
+     GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED,
+     NULL
+   };
+@@ -467,6 +472,9 @@ gst_v4l2_image_buffer_pool_set_config (GstBufferPool * pool, GstStructure * conf
+   priv->keepmapped = gst_buffer_pool_config_has_option (config,
+       GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+ 
++  priv->isubwc = gst_buffer_pool_config_has_option (config,
++      GST_V4L2_IMAGE_BUFFER_POOL_OPTION_UBWC_MODE);
++
+   // GBM library has its own alignment for the allocated buffers so update
+   // the size, stride and offset for the buffer planes in the video info.
+   if (GST_IS_GBM_MEMORY_TYPE (vpool->priv->memtype)) {
+@@ -483,6 +491,9 @@ gst_v4l2_image_buffer_pool_set_config (GstBufferPool * pool, GstStructure * conf
+     else if (GST_VIDEO_INFO_FORMAT (&priv->info) == GST_VIDEO_FORMAT_NV12_10LE32)
+       usage |= GBM_BO_USAGE_10BIT_TP_QTI;
+ 
++    if (priv->isubwc)
++      usage |= GBM_BO_USAGE_UBWC_ALIGNED_QTI;
++
+     priv->gbm_perform (GBM_PERFORM_GET_BUFFER_STRIDE_SCANLINE_SIZE, &bufinfo,
+         usage, &stride, &scanline, &size);
+ 
+@@ -493,6 +504,42 @@ gst_v4l2_image_buffer_pool_set_config (GstBufferPool * pool, GstStructure * conf
+     if (GST_VIDEO_INFO_N_PLANES (&priv->info) >= 2) {
+       GST_VIDEO_INFO_PLANE_STRIDE (&priv->info, 1) = stride;
+       GST_VIDEO_INFO_PLANE_OFFSET (&priv->info, 1) = stride * scanline;
++
++      // For UBWC formats there is very specific UV plane offset.
++      if (priv->isubwc && (bufinfo.format == GBM_FORMAT_NV12)) {
++        guint metastride, metascanline;
++
++        metastride = MMM_COLOR_FMT_Y_META_STRIDE (
++            MMM_COLOR_FMT_NV12_UBWC, bufinfo.width);
++        metascanline = MMM_COLOR_FMT_Y_META_SCANLINES (
++            MMM_COLOR_FMT_NV12_UBWC, bufinfo.height);
++
++        GST_VIDEO_INFO_PLANE_OFFSET (&priv->info, 1) =
++            MMM_COLOR_FMT_ALIGN (stride * scanline, DEFAULT_PAGE_ALIGNMENT) +
++            MMM_COLOR_FMT_ALIGN (metastride * metascanline, DEFAULT_PAGE_ALIGNMENT);
++      } else if (priv->isubwc && (bufinfo.format == GBM_FORMAT_YCbCr_420_TP10_UBWC)) {
++        guint metastride, metascanline;
++
++        metastride = MMM_COLOR_FMT_Y_META_STRIDE (
++            MMM_COLOR_FMT_NV12_BPP10_UBWC, bufinfo.width);
++        metascanline = MMM_COLOR_FMT_Y_META_SCANLINES (
++            MMM_COLOR_FMT_NV12_BPP10_UBWC,bufinfo.height);
++
++        GST_VIDEO_INFO_PLANE_OFFSET (&priv->info, 1) =
++            MMM_COLOR_FMT_ALIGN (stride * scanline, DEFAULT_PAGE_ALIGNMENT) +
++            MMM_COLOR_FMT_ALIGN (metastride * metascanline, DEFAULT_PAGE_ALIGNMENT);
++      } else if (priv->isubwc && (bufinfo.format == GBM_FORMAT_P010)) {
++        guint metastride, metascanline;
++
++        metastride = MMM_COLOR_FMT_Y_META_STRIDE (
++            MMM_COLOR_FMT_P010_UBWC, bufinfo.width);
++        metascanline = MMM_COLOR_FMT_Y_META_SCANLINES (
++            MMM_COLOR_FMT_P010_UBWC, bufinfo.height);
++
++        GST_VIDEO_INFO_PLANE_OFFSET (&priv->info, 1) =
++            MMM_COLOR_FMT_ALIGN (stride * scanline, DEFAULT_PAGE_ALIGNMENT) +
++            MMM_COLOR_FMT_ALIGN (metastride * metascanline, DEFAULT_PAGE_ALIGNMENT);
++      }
+     }
+ 
+     priv->info.size = MAX (size, priv->info.size);
+diff --git a/sys/v4l2/gstv4l2imagepool.h b/sys/v4l2/gstv4l2imagepool.h
+index 7b76733..30074d4 100644
+--- a/sys/v4l2/gstv4l2imagepool.h
++++ b/sys/v4l2/gstv4l2imagepool.h
+@@ -83,6 +83,13 @@ G_BEGIN_DECLS
+   (G_TYPE_CHECK_CLASS_TYPE ((klass), GST_TYPE_V4L2_IMAGE_BUFFER_POOL))
+ #define GST_V4L2_IMAGE_BUFFER_POOL_CAST(obj) ((GstV4l2ImageBufferPool*)(obj))
+ 
++/**
++ * GST_IMAGE_BUFFER_POOL_OPTION_UBWC_MODE:
++ *
++ * An option indicating that the allocated buffer must be UBWC.
++ */
++#define GST_V4L2_IMAGE_BUFFER_POOL_OPTION_UBWC_MODE "GstBufferPoolOptionUBWCMode"
++
+ /**
+  * GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED:
+  *
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 52ea89d..5678ab1 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -528,6 +528,8 @@ gst_v4l2_object_new (GstElement * element,
+   v4l2object->poll = gst_poll_new (TRUE);
+   v4l2object->can_poll_device = TRUE;
+ 
++  v4l2object->is_ubwc = FALSE;
++
+   /* We now disable libv4l2 by default, but have an env to enable it. */
+ #ifdef HAVE_LIBV4L2
+   if (g_getenv ("GST_V4L2_USE_LIBV4L2")) {
+@@ -3610,8 +3612,11 @@ gst_v4l2_object_set_format_full (GstV4l2Object * v4l2object, GstCaps * caps,
+   if (!gst_v4l2_object_get_caps_info (v4l2object, caps, &fmtdesc, &info))
+     goto invalid_caps;
+ 
+-  if (V4L2_TYPE_IS_OUTPUT (v4l2object->type) &&
+-      caps_has_compression (caps, "ubwc"))
++  if (caps_has_compression (caps, "ubwc"))
++    v4l2object->is_ubwc = TRUE;
++
++  if (v4l2object->is_ubwc &&
++      info.finfo->format == GST_VIDEO_FORMAT_NV12)
+     pixelformat = V4L2_PIX_FMT_QC08C;
+   else
+     pixelformat = fmtdesc->pixelformat;
+@@ -5603,4 +5608,4 @@ gst_v4l2_object_subscribe_event (GstV4l2Object * v4l2object, guint32 event)
+   }
+ 
+   return FALSE;
+-}
+\ No newline at end of file
++}
+diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
+index b5e11da..7b365d5 100644
+--- a/sys/v4l2/gstv4l2object.h
++++ b/sys/v4l2/gstv4l2object.h
+@@ -227,6 +227,8 @@ struct _GstV4l2Object {
+    * on slow USB firmwares. When this is set, gst_v4l2_set_format() will modify
+    * the caps to reflect what was negotiated during fixation */
+   gboolean skip_try_fmt_probes;
++
++  gboolean is_ubwc;
+ };
+ 
+ struct _GstV4l2ObjectClassHelper {

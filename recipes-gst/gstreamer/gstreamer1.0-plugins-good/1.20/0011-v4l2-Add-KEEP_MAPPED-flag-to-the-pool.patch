@@ -1,0 +1,145 @@
+From 4d816ccb26b5877892548a6728f5fbfb865cc226 Mon Sep 17 00:00:00 2001
+From: Nikolay Hristozov <quic_nhrist@quicinc.com>
+Date: Mon, 30 Sep 2024 17:28:32 +0300
+Subject: [PATCH] v4l2: Add KEEP_MAPPED flag to the pool
+
+Prevent mapping of same buffer twice by using KEEP_MAPPED flag.
+
+Signed-off-by: Nikolay Hristozov <quic_nhrist@quicinc.com>
+---
+ sys/v4l2/gstv4l2bufferpool.c |  4 ++++
+ sys/v4l2/gstv4l2imagepool.c  | 14 ++++++++++++++
+ sys/v4l2/gstv4l2object.c     |  5 +++++
+ sys/v4l2/gstv4l2sink.c       |  3 +++
+ sys/v4l2/gstv4l2transform.c  |  3 +++
+ 5 files changed, 29 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 3ee1255..4c282e2 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -635,6 +635,8 @@ gst_v4l2_buffer_pool_set_config (GstBufferPool * bpool, GstStructure * config)
+     updated = TRUE;
+     gst_buffer_pool_config_add_option (config,
+         GST_BUFFER_POOL_OPTION_VIDEO_META);
++    gst_buffer_pool_config_add_option (config,
++        GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+   }
+
+   /* Always update the config to ensure the configured size matches */
+@@ -825,6 +827,8 @@ gst_v4l2_buffer_pool_create_dma_pool (GstV4l2Object * obj, GstCaps * caps)
+
+   gst_buffer_pool_config_set_allocator (config, allocator, NULL);
+   gst_buffer_pool_config_add_option (config, GST_BUFFER_POOL_OPTION_VIDEO_META);
++  gst_buffer_pool_config_add_option (config,
++      GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+
+   if (!gst_buffer_pool_set_config (pool, config)) {
+     GST_ERROR_OBJECT (obj->dbg_obj, "Failed to set pool configuration !");
+diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
+index d3227ea..030187d 100644
+--- a/sys/v4l2/gstv4l2imagepool.c
++++ b/sys/v4l2/gstv4l2imagepool.c
+@@ -517,6 +517,7 @@ gst_v4l2_image_buffer_pool_alloc (GstBufferPool * pool, GstBuffer ** buffer,
+   GstVideoInfo *info = &priv->info;
+   GstMemory *memory = NULL;
+   GstBuffer *newbuffer = NULL;
++  GstMapInfo map;
+
+   if (GST_IS_GBM_MEMORY_TYPE (priv->memtype)) {
+     memory = gbm_device_alloc (vpool);
+@@ -545,6 +546,19 @@ gst_v4l2_image_buffer_pool_alloc (GstBufferPool * pool, GstBuffer ** buffer,
+     );
+   }
+
++  // Initially map the buffer
++  // If KEEP_MAPPED flag is set do initially map the buffer with READ and WRITE
++  // access. This will solve the issue where if someone map the buffer with
++  // READ only access at the begining after that it cannot be mapped with
++  // WRITE access.
++  if (priv->keepmapped) {
++    if (!gst_buffer_map (newbuffer, &map, GST_MAP_READWRITE)) {
++      GST_ERROR ("Failed to map GST buffer!");
++      return GST_FLOW_ERROR;
++    }
++    gst_buffer_unmap (newbuffer, &map);
++  }
++
+   *buffer = newbuffer;
+   return GST_FLOW_OK;
+ }
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 4065922..52ea89d 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -38,6 +38,7 @@
+ #include "gstv4l2object.h"
+ #include "gstv4l2tuner.h"
+ #include "gstv4l2colorbalance.h"
++#include "gstv4l2imagepool.h"
+
+ #include "gst/gst-i18n-plugin.h"
+
+@@ -5165,6 +5166,8 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+     GST_DEBUG_OBJECT (obj->dbg_obj, "activate Video Meta");
+     gst_buffer_pool_config_add_option (config,
+         GST_BUFFER_POOL_OPTION_VIDEO_META);
++    gst_buffer_pool_config_add_option (config,
++        GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+   }
+
+   gst_buffer_pool_config_set_allocator (config, allocator, &params);
+@@ -5220,6 +5223,8 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+       GST_DEBUG_OBJECT (obj->dbg_obj, "activate Video Meta");
+       gst_buffer_pool_config_add_option (config,
+           GST_BUFFER_POOL_OPTION_VIDEO_META);
++      gst_buffer_pool_config_add_option (config,
++          GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+     }
+
+     if (!gst_buffer_pool_set_config (other_pool, config)) {
+diff --git a/sys/v4l2/gstv4l2sink.c b/sys/v4l2/gstv4l2sink.c
+index 7ad1a8c..34dc2d7 100644
+--- a/sys/v4l2/gstv4l2sink.c
++++ b/sys/v4l2/gstv4l2sink.c
+@@ -58,6 +58,7 @@
+ #include "gstv4l2colorbalance.h"
+ #include "gstv4l2tuner.h"
+ #include "gstv4l2vidorient.h"
++#include "gstv4l2imagepool.h"
+
+ #include "gstv4l2elements.h"
+ #include "gstv4l2sink.h"
+@@ -603,6 +604,8 @@ gst_v4l2sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
+     config = gst_buffer_pool_get_config (bpool);
+     gst_buffer_pool_config_add_option (config,
+         GST_BUFFER_POOL_OPTION_VIDEO_META);
++    gst_buffer_pool_config_add_option (config,
++        GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+     gst_buffer_pool_set_config (bpool, config);
+
+     if (!gst_buffer_pool_set_active (bpool, TRUE))
+diff --git a/sys/v4l2/gstv4l2transform.c b/sys/v4l2/gstv4l2transform.c
+index c80c028..c0efebc 100644
+--- a/sys/v4l2/gstv4l2transform.c
++++ b/sys/v4l2/gstv4l2transform.c
+@@ -31,6 +31,7 @@
+
+ #include "gstv4l2object.h"
+ #include "gstv4l2transform.h"
++#include "gstv4l2imagepool.h"
+
+ #include <string.h>
+ #include <gst/gst-i18n-plugin.h>
+@@ -915,6 +916,8 @@ gst_v4l2_transform_prepare_output_buffer (GstBaseTransform * trans,
+          * stride/padding */
+         gst_buffer_pool_config_add_option (config,
+             GST_BUFFER_POOL_OPTION_VIDEO_META);
++        gst_buffer_pool_config_add_option (config,
++            GST_V4L2_IMAGE_BUFFER_POOL_OPTION_KEEP_MAPPED);
+       }
+     }
+
+--
+2.17.1
+

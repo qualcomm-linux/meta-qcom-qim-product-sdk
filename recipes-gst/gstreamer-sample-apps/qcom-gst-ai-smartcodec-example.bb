@@ -15,16 +15,16 @@ DEPENDS += "libsoup-2.4"
 DEPENDS += "qcom-gst-sample-apps-utils"
 DEPENDS:append:qcm6490 = " qcom-camera-server"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c8a7eb64a9fd96de0d205ce7604211f3768f83c5;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-sample-apps/gst-audio-video-encode"
-S = "${WORKDIR}/gst-audio-video-encode"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c8a7eb64a9fd96de0d205ce7604211f3768f83c5;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-sample-apps/gst-ai-smartcodec-example"
+S = "${WORKDIR}/gst-ai-smartcodec-example"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
 
-# Camera-related variables
-ENABLE_CAMERA          := "FALSE"
-CAMERA_SERVICE         := "QMMF"
+# Default platform definitions.
+ENABLE_CAMERA  := "FALSE"
+CAMERA_SERVICE := "QMMF"
 
 # Camera-related variables
 ENABLE_CAMERA:qcm6490  := "TRUE"

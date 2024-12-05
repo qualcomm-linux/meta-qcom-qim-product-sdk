@@ -25,6 +25,7 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     qcom-gst-ai-pose-detection \
     qcom-gst-ai-segmentation \
     qcom-gst-ai-superresolution \
+    qcom-gst-ai-smartcodec-example \
     qcom-gst-appsink-example \
     qcom-gst-audio-decode-example \
     qcom-gst-audio-encode-example \
@@ -48,6 +49,9 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     qcom-gst-webrtc-sendrecv-example \
     qcom-gst-weston-composition-example \
     qcom-gst-ai-multistream-batch-inference \
+    qcom-gst-python-examples \
+    qcom-gst-ai-face-recognition \
+    qcom-gst-ai-face-detection \
    "
 
 RDEPENDS:${PN}:remove:qcs9100 = " \
@@ -67,8 +71,28 @@ RDEPENDS:${PN}:remove:qcs9100 = " \
     qcom-gst-multi-camera-example \
     qcom-gst-multi-stream-example \
     qcom-gst-snapshot-stream-example \
+    qcom-gst-video-playback-example \
+    qcom-gst-weston-composition-example \
+  "
+
+RDEPENDS:${PN}:remove:qcs8300 = " \
+    qcom-gst-activate-deactivate-streams-runtime \
+    qcom-gst-add-remove-streams-runtime \
+    qcom-gst-add-streams-as-bundle-example \
+    qcom-gst-appsink-example \
+    qcom-gst-audio-decode-example \
+    qcom-gst-audio-encode-example \
+    qcom-gst-audio-video-encode \
+    qcom-gst-audio-video-playback \
+    qcom-gst-camera-burst-capture-example \
+    qcom-gst-camera-metadata-example \
+    qcom-gst-camera-shdr-ldc-eis-example \
+    qcom-gst-camera-single-stream-example \
+    qcom-gst-camera-switch-example \
+    qcom-gst-multi-camera-example \
+    qcom-gst-multi-stream-example \
+    qcom-gst-snapshot-stream-example \
     qcom-gst-usb-single-camera-app \
     qcom-gst-video-playback-example \
-    qcom-gst-webrtc-sendrecv-example \
     qcom-gst-weston-composition-example \
   "

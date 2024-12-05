@@ -1,4 +1,4 @@
-From 76bee7a85fc3d78fad4674ffeb76797dc68acaf5 Mon Sep 17 00:00:00 2001
+From 3b9e03e6f7ad4c34fd7c16c211c926a34fb33371 Mon Sep 17 00:00:00 2001
 From: Ivan Evlogiev <quic_ievlogie@quicinc.com>
 Date: Wed, 22 May 2024 13:37:07 +0000
 Subject: [PATCH 7/7] gstreamer1.0-plugins-bad: Add meson option to build all
@@ -235,7 +235,7 @@ index 77dadcf..307bf2e 100644
 +  subdir('wayland')
 +endif
 diff --git a/gst/meson.build b/gst/meson.build
-index 9cf62db..931f61a 100644
+index 9cf62db..1a671b8 100644
 --- a/gst/meson.build
 +++ b/gst/meson.build
 @@ -1,18 +1,24 @@
@@ -254,7 +254,7 @@ index 9cf62db..931f61a 100644
 -                  'timecode', 'transcode', 'videofilters',
 -                  'videoframe_audiolevel', 'videoparsers', 'videosignal',
 -                  'vmnc', 'y4m']
-+gst_plugins = ['mxf']
++gst_plugins = ['mxf', 'videoparsers']
 +
 +if build_all_plugins
 +  gst_plugins = ['accurip', 'adpcmdec', 'adpcmenc', 'aiff', 'asfmux',
@@ -383,5 +383,5 @@ index f635077..3ea87b5 100644
 +  subdir('decklink')
 +endif
 -- 
-2.34.1
+2.17.1
 

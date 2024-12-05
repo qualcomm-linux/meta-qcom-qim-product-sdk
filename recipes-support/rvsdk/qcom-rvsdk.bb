@@ -2,10 +2,10 @@ DESCRIPTION      = "Qualcomm Robotics Vision SDK"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-RVSDK_SRC_VER="r1.0_00039.2"
+RVSDK_BUILD_ID    = "r1.0_00049.0"
 
-SRC_URI = "https://artifacts.codelinaro.org/artifactory/qli-ci/software/chip/qualcomm_linux-spf-1-0/qualcomm-linux-spf-1-0_test_device_public/${RVSDK_SRC_VER}/le-qcrobotics-1-0-r1/apps_proc/prebuilt_HY22/mono-vslam_1.0_armv8-2a.tar.gz"
-SRC_URI[sha256sum] = "58f108b42bf3c52aa9a0e8cf1e00ed96526488f1f1c6301beed2f5606a1870c7"
+SRC_URI = "https://qartifactory-edge.qualcomm.com/artifactory/qsc_releases/software/chip/qualcomm_linux-spf-1-0/qualcomm-linux-spf-1-0_test_device_pb_qirpsdk/${RVSDK_BUILD_ID}/le-qcrobotics-1-0-r1/apps_proc/prebuilt_HY22/mono-vslam_1.0_aarch64.tar.gz"
+SRC_URI[sha256sum] = "aff3912682d2dcad3a1ac5f2dc6bbeb34316ab7b8f9a407af344ffcb29692a22"
 
 RVSDK_DIR = "${WORKDIR}/opt/qcom/qirf-sdk/usr/"
 

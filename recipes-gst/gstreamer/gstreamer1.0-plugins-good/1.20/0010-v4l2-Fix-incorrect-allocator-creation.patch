@@ -1,0 +1,60 @@
+From 185ce7f272720e60283e48faa1ed78295d9d2a32 Mon Sep 17 00:00:00 2001
+From: Nikolay Hristozov <quic_nhrist@quicinc.com>
+Date: Mon, 30 Sep 2024 17:01:42 +0300
+Subject: [PATCH] v4l2: Fix incorrect allocator creation
+
+In case of GBM pool the allocation should be created with
+gst_fd_allocator_new instead of gst_dmabuf_allocator_new.
+
+Signed-off-by: Nikolay Hristozov <quic_nhrist@quicinc.com>
+---
+ sys/v4l2/gstv4l2bufferpool.c | 9 ++++++++-
+ sys/v4l2/gstv4l2imagepool.c  | 4 +++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index b7323c6..3ee1255 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -811,11 +811,18 @@ gst_v4l2_buffer_pool_create_dma_pool (GstV4l2Object * obj, GstCaps * caps)
+   gst_buffer_pool_config_set_params (config, caps, obj->info.size,
+       DEFAULT_MIN_BUFFERS, DEFAULT_MAX_BUFFERS);
+
+-  if (!(allocator = gst_dmabuf_allocator_new ())) {
++  if (!is_encoded && !(allocator = gst_fd_allocator_new ())) {
+     GST_ERROR_OBJECT (obj->dbg_obj, "Failed to create fd allocator !");
+     g_clear_object (&pool);
+     return NULL;
+   }
++
++  if (is_encoded && !(allocator = gst_dmabuf_allocator_new ())) {
++    GST_ERROR_OBJECT (obj->dbg_obj, "Failed to create dmabuf allocator !");
++    g_clear_object (&pool);
++    return NULL;
++  }
++
+   gst_buffer_pool_config_set_allocator (config, allocator, NULL);
+   gst_buffer_pool_config_add_option (config, GST_BUFFER_POOL_OPTION_VIDEO_META);
+
+diff --git a/sys/v4l2/gstv4l2imagepool.c b/sys/v4l2/gstv4l2imagepool.c
+index 3718ac7..d3227ea 100644
+--- a/sys/v4l2/gstv4l2imagepool.c
++++ b/sys/v4l2/gstv4l2imagepool.c
+@@ -553,11 +553,13 @@ static void
+ gst_v4l2_image_buffer_pool_free (GstBufferPool * pool, GstBuffer * buffer)
+ {
+   GstV4l2ImageBufferPool *vpool = GST_V4L2_IMAGE_BUFFER_POOL (pool);
+-  gint fd = gst_dmabuf_memory_get_fd (gst_buffer_peek_memory (buffer, 0));
++  gint fd = -1;
+
+   if (GST_IS_GBM_MEMORY_TYPE (vpool->priv->memtype)) {
++    fd = gst_fd_memory_get_fd (gst_buffer_peek_memory (buffer, 0));
+     gbm_device_free (vpool, fd);
+   } else if (GST_IS_DMA_MEMORY_TYPE (vpool->priv->memtype)) {
++    fd = gst_dmabuf_memory_get_fd (gst_buffer_peek_memory (buffer, 0));
+     dma_device_free (vpool, fd);
+   }
+   gst_buffer_unref (buffer);
+--
+2.17.1
+

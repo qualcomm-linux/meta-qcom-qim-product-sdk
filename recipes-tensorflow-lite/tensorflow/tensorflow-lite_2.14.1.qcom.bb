@@ -95,12 +95,6 @@ do_install:append() {
 
     cp -r ${B}/eigen/unsupported ${D}${includedir}/
 
-    install -d ${D}${includedir}/absl
-
-    cd ${B}/abseil-cpp/absl
-    cp --parents $(find . -name "*.h*") ${D}${includedir}/absl/
-    install -m 0644 numeric/int128_have_intrinsic.inc ${D}${includedir}/absl/numeric/
-
     install -d ${D}${includedir}/gemmlowp
 
     cd ${B}/gemmlowp

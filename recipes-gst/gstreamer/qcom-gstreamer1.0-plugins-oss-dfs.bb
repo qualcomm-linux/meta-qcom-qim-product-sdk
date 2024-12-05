@@ -1,4 +1,4 @@
-inherit cmake
+inherit cmake pkgconfig
 
 SUMMARY = "Qualcomm open-source GStreamer Plug-in for DFS (Depth From Stereo)"
 HOMEPAGE = "https://git.codelinaro.org"
@@ -11,14 +11,17 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
-DEPENDS += "vslam"
+DEPENDS += "qcom-rvsdk"
 
-SRC_URI =+ "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=9738171ffc03effaa22e2c4508833544b8879404;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-dfs"
+SRC_URI =+ "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c8a7eb64a9fd96de0d205ce7604211f3768f83c5;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-dfs"
 S = "${WORKDIR}/gst-plugin-dfs"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
+
+# RVSDK api version definitions.
+RVSDK_API_VERSION := "0x202404"
 
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
@@ -32,7 +35,9 @@ EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_VERSION=${PV}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_PACKAGE=${PN}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_SUMMARY="${SUMMARY}""
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_ORIGIN=${HOMEPAGE}"
+EXTRA_OECMAKE += "-DRVSDK_API_VERSION=${RVSDK_API_VERSION}"
 
+INSANE_SKIP:${PN} = "already-stripped"
 FILES:${PN} += "${INSTALL_BINDIR}"
 FILES:${PN} += "${INSTALL_LIBDIR}"
 

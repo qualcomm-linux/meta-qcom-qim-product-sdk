@@ -13,7 +13,7 @@ DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
 DEPENDS += "qcom-camera-server"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=9738171ffc03effaa22e2c4508833544b8879404;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-qmmfsrc"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https;rev=c8a7eb64a9fd96de0d205ce7604211f3768f83c5;branch=imsdk.lnx.2.0.0.r2-rel;subpath=gst-plugin-qmmfsrc"
 S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.
@@ -41,6 +41,16 @@ VIDEO_MAX_WIDTH:qcm6490    := "5184"
 VIDEO_MAX_HEIGHT:qcm6490   := "3880"
 EIS_MODES_ENABLE:qcm6490   := "TRUE"
 VHDR_MODES_ENABLE:qcm6490  := "TRUE"
+
+# Overwrite the default platform definitions for qcs9100
+VIDEO_TYPE_SUPPORT:qcs9100 := "TRUE"
+CAMERA_SERVICE:qcs9100     := "LECAM"
+IMAGE_MAX_WIDTH:qcs9100    := "5184"
+IMAGE_MAX_HEIGHT:qcs9100   := "3880"
+VIDEO_MAX_WIDTH:qcs9100    := "5184"
+VIDEO_MAX_HEIGHT:qcs9100   := "3880"
+EIS_MODES_ENABLE:qcs9100   := "TRUE"
+VHDR_MODES_ENABLE:qcs9100  := "TRUE"
 
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
