@@ -1,6 +1,6 @@
 inherit cmake pkgconfig
 
-SUMMARY = "QTI Message Broker Clients"
+SUMMARY = "QCOM Message Broker Clients"
 HOMEPAGE = "https://git.codelinaro.org"
 SECTION = "multimedia"
 
@@ -13,10 +13,10 @@ DEPENDS += "mosquitto"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "c8a7eb64a9fd96de0d205ce7604211f3768f83c5"
+SRCREV     = "49256b26148d10257959b2b8d55879f72888cb0f"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-plugin-msgbroker/"
-S = "${WORKDIR}/gst-plugin-msgbroker/"
+S = "${WORKDIR}/gst-plugin-msgbroker"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"

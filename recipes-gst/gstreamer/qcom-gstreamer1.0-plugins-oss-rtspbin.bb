@@ -1,6 +1,6 @@
 inherit cmake pkgconfig
 
-SUMMARY = "QTI open-source GStreamer Plug-in for rtsp streaming"
+SUMMARY = "QCOM open-source GStreamer Plug-in for rtsp streaming"
 HOMEPAGE = "https://git.codelinaro.org"
 SECTION = "multimedia"
 
@@ -14,7 +14,7 @@ DEPENDS += "gstreamer1.0-rtsp-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "c8a7eb64a9fd96de0d205ce7604211f3768f83c5"
+SRCREV     = "49256b26148d10257959b2b8d55879f72888cb0f"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-plugin-rtspbin"
 S = "${WORKDIR}/gst-plugin-rtspbin"

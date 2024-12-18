@@ -145,7 +145,6 @@ GST_SAMPLE_APPS:remove:qcs8300 = " \
     qcom-gst-multi-camera-example:do_package_write_ipk \
     qcom-gst-multi-stream-example:do_package_write_ipk \
     qcom-gst-snapshot-stream-example:do_package_write_ipk \
-    qcom-gst-usb-single-camera-app:do_package_write_ipk \
     qcom-gst-video-playback-example:do_package_write_ipk \
     qcom-gst-weston-composition-example:do_package_write_ipk \
   "

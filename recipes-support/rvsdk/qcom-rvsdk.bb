@@ -16,7 +16,7 @@ do_install() {
     install -d ${D}/${includedir}
     install -d ${D}/${libdir}/
 
-    cp -r ${RVSDK_DIR}/lib/* ${D}/${libdir}
+    cp -r ${RVSDK_DIR}/lib/*.so ${D}/${libdir}
     cp -r ${RVSDK_DIR}/include/* ${D}/${includedir}
 }
 
@@ -26,5 +26,7 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 
-FILES:${PN} += "${libdir}/*"
-FILES:${PN} += "${includedir}/*"
+FILES:${PN} = "${libdir}/*.so"
+FILES:${PN}-dev += "${includedir}/*"
+
+INSANE_SKIP:${PN} += "installed-vs-shipped"

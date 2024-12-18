@@ -92,7 +92,6 @@ RDEPENDS:${PN}:remove:qcs8300 = " \
     qcom-gst-multi-camera-example \
     qcom-gst-multi-stream-example \
     qcom-gst-snapshot-stream-example \
-    qcom-gst-usb-single-camera-app \
     qcom-gst-video-playback-example \
     qcom-gst-weston-composition-example \
   "

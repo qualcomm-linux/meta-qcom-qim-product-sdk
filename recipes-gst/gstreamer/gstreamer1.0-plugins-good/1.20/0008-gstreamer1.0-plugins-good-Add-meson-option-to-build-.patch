@@ -1,8 +1,8 @@
-From 1c6f3cbe56a4091f51c62e82ffd38cde7d1ff4eb Mon Sep 17 00:00:00 2001
+From 13993daa87427c0912ccf1dd449777609e1cf506 Mon Sep 17 00:00:00 2001
 From: Ivan Evlogiev <quic_ievlogie@quicinc.com>
 Date: Wed, 22 May 2024 13:16:06 +0000
-Subject: [PATCH 8/8] gstreamer1.0-plugins-good: Add meson option to build all
- plugins
+Subject: [PATCH 08/12] gstreamer1.0-plugins-good: Add meson option to build
+ all plugins
 
 - Default value is to build all plugins
 - If reduced set of plugins is selected, then only are build:
@@ -10,20 +10,25 @@ Subject: [PATCH 8/8] gstreamer1.0-plugins-good: Add meson option to build all
     ext/qt
     gst/avi
 
+- Enable gstpulseaudio.
+    Append the pulse subdir to both statement,
+    to ensure gstpulseaudio will be compiled.
+
 Signed-off-by: Ivan Evlogiev <quic_ievlogie@quicinc.com>
+Signed-off-by: Mustafa Ali <quic_mustali@quicinc.com>
 ---
- ext/meson.build   | 48 +++++++++++++++++++++++++----------------------
- gst/meson.build   | 24 +++++++++++++++---------
+ ext/meson.build   | 49 ++++++++++++++++++++++++++---------------------
+ gst/meson.build   | 24 ++++++++++++++---------
  meson.build       |  8 ++++++--
  meson_options.txt |  4 ++++
- sys/meson.build   | 22 +++++++++++++---------
- 5 files changed, 64 insertions(+), 42 deletions(-)
+ sys/meson.build   | 22 ++++++++++++---------
+ 5 files changed, 65 insertions(+), 42 deletions(-)
 
 diff --git a/ext/meson.build b/ext/meson.build
-index 6f5594e..847895f 100644
+index 6f5594e..737554f 100644
 --- a/ext/meson.build
 +++ b/ext/meson.build
-@@ -1,22 +1,26 @@
+@@ -1,22 +1,27 @@
 -subdir('aalib')
 -subdir('cairo')
 -subdir('flac')
@@ -71,6 +76,7 @@ index 6f5594e..847895f 100644
 +  subdir('wavpack')
 +else
 +  subdir('qt')
++  subdir('pulse')
 +endif
 diff --git a/gst/meson.build b/gst/meson.build
 index cbc28ca..88d4e15 100644
@@ -166,5 +172,5 @@ index d337015..32ee353 100644
 +  subdir('v4l2')
 +endif
 -- 
-2.34.1
+2.25.1
 

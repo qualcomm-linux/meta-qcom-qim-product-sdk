@@ -17,7 +17,7 @@ DEPENDS:append:qcm6490 = " qcom-camera-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "c8a7eb64a9fd96de0d205ce7604211f3768f83c5"
+SRCREV     = "49256b26148d10257959b2b8d55879f72888cb0f"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-sample-apps/gst-camera-single-stream-example"
 S = "${WORKDIR}/gst-camera-single-stream-example"
@@ -26,21 +26,11 @@ S = "${WORKDIR}/gst-camera-single-stream-example"
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
 
-# Default platform definitions.
-ENABLE_CAMERA  := "FALSE"
-CAMERA_SERVICE := "QMMF"
-
-# Camera-related variables
-ENABLE_CAMERA:qcm6490  := "TRUE"
-CAMERA_SERVICE:qcm6490 := "LECAM"
-
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
 EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
-EXTRA_OECMAKE += "-DENABLE_CAMERA=${ENABLE_CAMERA}"
-EXTRA_OECMAKE += "-DCAMERA_SERVICE=${CAMERA_SERVICE}"
 
 FILES:${PN} += "${INSTALL_BINDIR}"
 FILES:${PN} += "${INSTALL_LIBDIR}"

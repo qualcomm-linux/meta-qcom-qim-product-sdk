@@ -30,21 +30,21 @@ The Qualcomm Intelligent Multimedia Product SDK consist of :
 
 ## Host Setup and Download the Yocto Project BSP
 
-Refer to [QCOM Linux Yocto BSP releases](https://github.com/quic-yocto/qcom-manifest/blob/qcom-linux-kirkstone/README.md) setup the host environment and download Yocto Project BSP.
+Refer to [QCOM Linux Yocto BSP releases](https://github.com/qualcomm-linux/qcom-manifest/blob/qcom-linux-kirkstone/README.md) setup the host environment and download Yocto Project BSP.
 
 ```shell
 mkdir [release]
 cd [release]
-repo init -u https://github.com/quic-yocto/qcom-manifest -b [branch name] -m [release manifest]
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b [branch name] -m [release manifest]
 repo sync
 ```
 
 ## Examples
 
-To download the `qcom-6.6.52-QLI.1.3-Ver.1.0` release
+To download the `qcom-6.6.52-QLI.1.3-Ver.1.1` release
 
 ```shell
-repo init -u https://github.com/quic-yocto/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.52-QLI.1.3-Ver.1.0.xml
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-kirkstone -m qcom-6.6.52-QLI.1.3-Ver.1.1.xml
 repo sync
 ```
 
@@ -52,15 +52,15 @@ repo sync
 
 ```shell
 cd [release]
-git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b [meta-qcom-qim-product-sdk release tag] layers/meta-qcom-qim-product-sdk
+git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b [meta-qcom-qim-product-sdk release tag] layers/meta-qcom-qim-product-sdk
 ```
-Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://github.com/quic-yocto/meta-qcom-qim-product-sdk/tags
+Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk/tags
 
 ## Examples
 
-To download the `qcom-6.6.52-QLI.1.3-Ver.1.0_qim-product-sdk-1.1.1` release tag
+To download the `qcom-6.6.52-QLI.1.3-Ver.1.1_qim-product-sdk-1.1.2` release tag
 ```shell
-git clone https://github.com/quic-yocto/meta-qcom-qim-product-sdk -b qcom-6.6.52-QLI.1.3-Ver.1.0_qim-product-sdk-1.1.1 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.52-QLI.1.3-Ver.1.1_qim-product-sdk-1.1.2 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
@@ -108,7 +108,7 @@ Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/q
 
 [Standard Yocto environment](https://docs.yoctoproject.org/4.0.20/brief-yoctoprojectqs/index.html)
 
-[QCOM Linux Yocto BSP releases](https://github.com/quic-yocto/qcom-manifest/blob/qcom-linux-kirkstone/README.md)
+[QCOM Linux Yocto BSP releases](https://github.com/qualcomm-linux/qcom-manifest/blob/qcom-linux-kirkstone/README.md)
 
 # Maintainer(s)
 1. Chandra Bothsa <quic_cbothsa@quicinc.com>
