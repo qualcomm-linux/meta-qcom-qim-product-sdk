@@ -86,7 +86,7 @@ QIM Product SDK output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/qim_
 
 # Flash image
 
-To flash the generated build, see the [Flash images](https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-254/flash_images.html?vproduct=1601111740013072&versionId=35c3bc73-6ae0-4179-b66b-a01844b5a87f)
+To flash the generated build, see the [Flash images](https://docs.qualcomm.com/bundle/publicresource/topics/80-70017-254/flash_images.html?vproduct=1601111740013072&version=1.3)
 
 # Generate Standard SDK and Extensible SDK for Standalone Application Development
 
@@ -106,7 +106,7 @@ Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/q
 
 # Reference
 
-[Standard Yocto environment](https://docs.yoctoproject.org/4.0.20/brief-yoctoprojectqs/index.html)
+[Standard Yocto environment](https://docs.yoctoproject.org/4.0.22/brief-yoctoprojectqs/index.html)
 
 [QCOM Linux Yocto BSP releases](https://github.com/qualcomm-linux/qcom-manifest/blob/qcom-linux-kirkstone/README.md)
 
