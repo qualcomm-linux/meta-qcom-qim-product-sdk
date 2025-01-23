@@ -60,12 +60,10 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     qcom-gstreamer1.0-plugins-oss-mlvsegmentation \
     qcom-gstreamer1.0-plugins-oss-msgbroker \
     qcom-gstreamer1.0-plugins-oss-objtracker \
-    qcom-gstreamer1.0-plugins-oss-overlay \
     qcom-gstreamer1.0-plugins-oss-qmmfsrc \
     qcom-gstreamer1.0-plugins-oss-redissink \
     qcom-gstreamer1.0-plugins-oss-restricted-zone \
     qcom-gstreamer1.0-plugins-oss-rtspbin \
-    qcom-gstreamer1.0-plugins-oss-smartvencbin \
     qcom-gstreamer1.0-plugins-oss-socket \
     qcom-gstreamer1.0-plugins-oss-test-framework \
     qcom-gstreamer1.0-plugins-oss-vcomposer \

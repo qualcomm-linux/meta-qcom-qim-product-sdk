@@ -40,12 +40,10 @@ GST_PLUGINS = " \
     qcom-gstreamer1.0-plugins-oss-mlvsegmentation:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-msgbroker:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-objtracker:do_package_write_ipk \
-    qcom-gstreamer1.0-plugins-oss-overlay:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-qmmfsrc:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-redissink:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-restricted-zone:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-rtspbin:do_package_write_ipk \
-    qcom-gstreamer1.0-plugins-oss-smartvencbin:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-socket:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-test-framework:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-vcomposer:do_package_write_ipk \
