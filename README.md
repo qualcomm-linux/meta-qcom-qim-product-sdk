@@ -44,7 +44,7 @@ repo sync
 To download the `qcom-6.6.58-QLI.1.3.1-Ver.1.0` release
 
 ```shell
-repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.58-QLI.1.3.1-Ver.1.0
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.58-QLI.1.3.1-Ver.1.0.xml
 repo sync
 ```
 
