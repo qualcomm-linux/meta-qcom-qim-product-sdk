@@ -1,0 +1,65 @@
+From 64c0e870f2aaf324ee164e7c6930ce8855f72e1a Mon Sep 17 00:00:00 2001
+From: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
+Date: Mon, 27 Jan 2025 21:04:32 +0530
+Subject: [PATCH] v4l2: Add support for fd memory import
+
+Camera provides FD memory instead of DMA memory for performance reasons.
+Though, FD is allocated using DMA heap.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
+---
+ sys/v4l2/gstv4l2allocator.c  | 7 +++++--
+ sys/v4l2/gstv4l2bufferpool.c | 2 +-
+ sys/v4l2/gstv4l2object.c     | 2 +-
+ 3 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2allocator.c b/sys/v4l2/gstv4l2allocator.c
+index a621f3f..7621668 100644
+--- a/sys/v4l2/gstv4l2allocator.c
++++ b/sys/v4l2/gstv4l2allocator.c
+@@ -1103,12 +1103,15 @@ gst_v4l2_allocator_import_dmabuf (GstV4l2Allocator * allocator,
+     gint dmafd;
+     gsize size, offset, maxsize;
+ 
+-    if (!gst_is_dmabuf_memory (dma_mem[i]))
++    if (!gst_is_dmabuf_memory (dma_mem[i]) && !gst_is_fd_memory(dma_mem[i]))
+       goto not_dmabuf;
+ 
+     size = gst_memory_get_sizes (dma_mem[i], &offset, &maxsize);
+ 
+-    dmafd = gst_dmabuf_memory_get_fd (dma_mem[i]);
++    if (gst_is_dmabuf_memory (dma_mem[i]))
++      dmafd = gst_dmabuf_memory_get_fd (dma_mem[i]);
++    else
++      dmafd = gst_fd_memory_get_fd (dma_mem[i]);
+ 
+     GST_LOG_OBJECT (allocator, "[%i] imported DMABUF as fd %i plane %d",
+         group->buffer.index, dmafd, i);
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 58c2099..42dc6ae 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -92,7 +92,7 @@ gst_v4l2_is_buffer_valid (GstBuffer * buffer, GstV4l2MemoryGroup ** out_group)
+   if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_TAG_MEMORY))
+     goto done;
+ 
+-  if (gst_is_dmabuf_memory (mem))
++  if (gst_is_dmabuf_memory (mem) || gst_is_fd_memory (mem))
+     mem = gst_mini_object_get_qdata (GST_MINI_OBJECT (mem),
+         GST_V4L2_MEMORY_QUARK);
+ 
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 047e059..d3701bc 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -5485,7 +5485,7 @@ gst_v4l2_object_try_import (GstV4l2Object * obj, GstBuffer * buffer)
+     for (i = 0; i < n_mem; i++) {
+       GstMemory *mem = gst_buffer_peek_memory (buffer, i);
+ 
+-      if (!gst_is_dmabuf_memory (mem)) {
++      if (!gst_is_dmabuf_memory (mem) && !gst_is_fd_memory (mem)) {
+         GST_DEBUG_OBJECT (obj->dbg_obj, "Cannot import non-DMABuf memory.");
+         return FALSE;
+       }

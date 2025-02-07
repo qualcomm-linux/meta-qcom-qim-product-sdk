@@ -65,6 +65,12 @@ PACKAGECONFIG ?= "gpu"
 
 PACKAGECONFIG[gpu] = " -DTFLITE_ENABLE_GPU=ON ,  -DTFLITE_ENABLE_GPU=OFF, qcom-adreno vulkan-headers, qcom-adreno"
 
+COMPILER = "${@bb.utils.contains('TUNE_FEATURES', 'clang', 'clang', 'gcc', d)}"
+python () {
+    if d.getVar('COMPILER') == 'clang':
+        d.appendVar('EXTRA_OECMAKE', ' -DXNNPACK_ENABLE_ARM_BF16=OFF')
+}
+
 FILES_${PN} = "${libdir}/lib*.so ${bindir}/*"
 FILES_${PN}-dev += "${includedir}"
 

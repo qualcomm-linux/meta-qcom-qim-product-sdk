@@ -40,10 +40,12 @@ GST_PLUGINS = " \
     qcom-gstreamer1.0-plugins-oss-mlvsegmentation:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-msgbroker:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-objtracker:do_package_write_ipk \
+    qcom-gstreamer1.0-plugins-oss-overlay:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-qmmfsrc:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-redissink:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-restricted-zone:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-rtspbin:do_package_write_ipk \
+    qcom-gstreamer1.0-plugins-oss-smartvencbin:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-socket:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-test-framework:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-vcomposer:do_package_write_ipk \
@@ -109,7 +111,6 @@ GST_SAMPLE_APPS:remove:qcs9100 = " \
     qcom-gst-activate-deactivate-streams-runtime:do_package_write_ipk \
     qcom-gst-add-remove-streams-runtime:do_package_write_ipk \
     qcom-gst-add-streams-as-bundle-example:do_package_write_ipk \
-    qcom-gst-appsink-example:do_package_write_ipk \
     qcom-gst-audio-decode-example:do_package_write_ipk \
     qcom-gst-audio-encode-example:do_package_write_ipk \
     qcom-gst-audio-video-encode:do_package_write_ipk \
@@ -117,13 +118,10 @@ GST_SAMPLE_APPS:remove:qcs9100 = " \
     qcom-gst-camera-burst-capture-example:do_package_write_ipk \
     qcom-gst-camera-metadata-example:do_package_write_ipk \
     qcom-gst-camera-shdr-ldc-eis-example:do_package_write_ipk \
-    qcom-gst-camera-single-stream-example:do_package_write_ipk \
     qcom-gst-camera-switch-example:do_package_write_ipk \
     qcom-gst-multi-camera-example:do_package_write_ipk \
-    qcom-gst-multi-stream-example:do_package_write_ipk \
     qcom-gst-snapshot-stream-example:do_package_write_ipk \
     qcom-gst-video-playback-example:do_package_write_ipk \
-    qcom-gst-weston-composition-example:do_package_write_ipk \
   "
 
 GST_SAMPLE_APPS:remove:qcs8300 = " \

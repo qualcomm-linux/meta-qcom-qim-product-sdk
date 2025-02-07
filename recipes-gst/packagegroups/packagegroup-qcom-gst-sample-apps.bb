@@ -58,7 +58,6 @@ RDEPENDS:${PN}:remove:qcs9100 = " \
     qcom-gst-activate-deactivate-streams-runtime \
     qcom-gst-add-remove-streams-runtime \
     qcom-gst-add-streams-as-bundle-example \
-    qcom-gst-appsink-example \
     qcom-gst-audio-decode-example \
     qcom-gst-audio-encode-example \
     qcom-gst-audio-video-encode \
@@ -66,13 +65,10 @@ RDEPENDS:${PN}:remove:qcs9100 = " \
     qcom-gst-camera-burst-capture-example \
     qcom-gst-camera-metadata-example \
     qcom-gst-camera-shdr-ldc-eis-example \
-    qcom-gst-camera-single-stream-example \
     qcom-gst-camera-switch-example \
     qcom-gst-multi-camera-example \
-    qcom-gst-multi-stream-example \
     qcom-gst-snapshot-stream-example \
     qcom-gst-video-playback-example \
-    qcom-gst-weston-composition-example \
   "
 
 RDEPENDS:${PN}:remove:qcs8300 = " \

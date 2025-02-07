@@ -16,7 +16,7 @@ DEPENDS += "qcom-gst-sample-apps-utils"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "ed15004492fa3927dd867d3e377ba5cf4411b71f"
+SRCREV     = "ad05a0b64b3193e432528d081ee88421534366b4"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-sample-apps/gst-usb-single-camera-app"
 S = "${WORKDIR}/gst-usb-single-camera-app"

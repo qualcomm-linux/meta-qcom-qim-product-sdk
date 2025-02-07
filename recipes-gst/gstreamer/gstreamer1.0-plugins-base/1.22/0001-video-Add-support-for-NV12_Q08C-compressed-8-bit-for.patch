@@ -1,4 +1,4 @@
-From 2af5a108d2e8ed7afe2762d59bff8c4bb3683fc9 Mon Sep 17 00:00:00 2001
+From 78f182f6b97e666e6ac241f33eb47b09979cdd7d Mon Sep 17 00:00:00 2001
 From: Pratik Pachange <quic_ppachang@quicinc.com>
 Date: Sat, 4 Jan 2025 12:29:20 +0530
 Subject: [PATCH] video: Add support for NV12_Q08C (compressed 8-bit) format
@@ -7,11 +7,11 @@ Upstream-Status: Inappropriate [Qualcomm specific]
 
 Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
 ---
- gst-libs/gst/video/video-format.c | 25 ++++++++++++++++++++++++-
- gst-libs/gst/video/video-format.h | 12 ++++++++++--
- gst-libs/gst/video/video-info.c   | 23 +++++++++++++++++++++++
+ gst-libs/gst/video/video-format.c | 25 +++++++++++++++++++-
+ gst-libs/gst/video/video-format.h | 12 ++++++++--
+ gst-libs/gst/video/video-info.c   | 38 +++++++++++++++++++++++++++++++
  gst-libs/gst/video/video-scaler.c |  1 +
- 4 files changed, 58 insertions(+), 3 deletions(-)
+ 4 files changed, 73 insertions(+), 3 deletions(-)
 
 diff --git a/gst-libs/gst/video/video-format.c b/gst-libs/gst/video/video-format.c
 index d869f9a..e7da2f0 100644
@@ -108,34 +108,49 @@ index 7a645cc..9a50b3f 100644
  
  GST_VIDEO_API
 diff --git a/gst-libs/gst/video/video-info.c b/gst-libs/gst/video/video-info.c
-index eaca27a..a49895e 100644
+index eaca27a..a063c1c 100644
 --- a/gst-libs/gst/video/video-info.c
 +++ b/gst-libs/gst/video/video-info.c
-@@ -1266,6 +1266,29 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
+@@ -1266,6 +1266,44 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
        info->size = info->offset[1] + n_tile_x * uv_n_tile_y * tile_size;
        break;
      }
 +    case GST_VIDEO_FORMAT_NV12_Q08C:
 +    {
-+      gint meta_width = 0, meta_height = 0;
-+      gint luma_meta_size = 0, chroma_meta_size = 0;
++      gint y_meta_stride = 0, y_meta_scanline = 0;
++      gint uv_meta_stride = 0, uv_meta_scanline = 0;
++      gint y_meta_size = 0, uv_meta_size = 0;
++      gint y_plane_size = 0, uv_plane_size = 0;
++      gint ALIGN_H = height;
++
++      if (width <= 1920 && height <= 1920 && (width * height) <= (1920 * 1088))
++        ALIGN_H = (height + 1) >> 1;
 +
 +      /* metadata size for Luma */
-+      meta_width = GST_ROUND_UP_64 (width >> 5);
-+      meta_height = GST_ROUND_UP_16 (height >> 3);
-+      luma_meta_size =  GST_ROUND_UP_N (meta_width * meta_height, 4096);
++      y_meta_stride = GST_ROUND_UP_64 (width >> 5);
++      y_meta_scanline = GST_ROUND_UP_16 (ALIGN_H >> 3);
++      y_meta_size =  GST_ROUND_UP_N (y_meta_stride * y_meta_scanline, 4096);
 +
-+      /* height changes for chroma */
-+      meta_height = GST_ROUND_UP_16 (((height + 1) >> 1) >> 3);
-+      chroma_meta_size = GST_ROUND_UP_N (meta_width * meta_height, 4096);
++      /* metadata size for chroma */
++      uv_meta_stride = GST_ROUND_UP_64 (((width + 1) >> 1) >> 4);
++      uv_meta_scanline = GST_ROUND_UP_16 (((ALIGN_H + 1) >> 1) >> 3);
++      uv_meta_size = GST_ROUND_UP_N (uv_meta_stride * uv_meta_scanline, 4096);
 +
 +      info->stride[0] = GST_ROUND_UP_128 (width);
 +      info->stride[1] = info->stride[0];
++
++      y_plane_size = GST_ROUND_UP_N((info->stride[0] *
++          GST_ROUND_UP_32 (ALIGN_H)), 4096);
++      uv_plane_size = GST_ROUND_UP_N((info->stride[1] *
++          GST_ROUND_UP_32 ((ALIGN_H + 1) >> 1)), 4096);
++
 +      info->offset[0] = 0;
-+      info->offset[1] = luma_meta_size +
-+          info->stride[0] * GST_ROUND_UP_32 (height);
-+      info->size = info->offset[1] + chroma_meta_size +
-+          info->stride[0] * GST_ROUND_UP_32 (height >> 1);
++      info->offset[1] = y_meta_size + y_plane_size;
++      info->size = info->offset[1] + uv_meta_size + uv_plane_size;
++      if (ALIGN_H != height) {
++        info->offset[1] = info->offset[1] << 1;
++        info->size = info->size << 1;
++      }
 +      break;
 +    }
      case GST_VIDEO_FORMAT_ENCODED:
