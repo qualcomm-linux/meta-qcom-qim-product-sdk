@@ -1,0 +1,98 @@
+From b2d8a65887e4e720248f508014872fd08892b859 Mon Sep 17 00:00:00 2001
+From: Stilyan Uzunov <quic_suzunov@quicinc.com>
+Date: Tue, 21 Jan 2025 13:33:07 +0000
+Subject: [PATCH] gstd: Change symlinks to relative in gstd and gst-client
+
+Relative symlinks preferred to absolute ones in case of eventual
+ exportation of gstd installed binaries. Relative symlinks still
+ completely functional after export.
+Change also reflects rest of gstreamer project, as any other symlinks
+ are relative.
+
+Signed-off-by: Stilyan Uzunov <quic_suzunov@quicinc.com>
+---
+ gst_client/gst_client_symbolic_link.sh | 12 ++++++++----
+ gst_client/meson.build                 | 10 ++++++----
+ gstd/gstd_symbolic_link.sh             | 12 ++++++++----
+ gstd/meson.build                       |  5 +++--
+ 4 files changed, 25 insertions(+), 14 deletions(-)
+
+diff --git a/gst_client/gst_client_symbolic_link.sh b/gst_client/gst_client_symbolic_link.sh
+index d8d7617..abf6087 100755
+--- a/gst_client/gst_client_symbolic_link.sh
++++ b/gst_client/gst_client_symbolic_link.sh
+@@ -1,7 +1,11 @@
+ #!/bin/sh
+ # This script is executed at install time to create and install symbolic links
+ 
+-# $1: target
+-# $2: link name
+-rm -f ${DESTDIR}${MESON_INSTALL_PREFIX}/$2
+-ln -s ${DESTDIR}${MESON_INSTALL_PREFIX}/$1 ${DESTDIR}${MESON_INSTALL_PREFIX}/$2
++# $1: bindir
++# $2: target
++# $3: link name
++(
++    cd ${DESTDIR}${MESON_INSTALL_PREFIX}/${1}
++    rm -f ${3}
++    ln -s ${2} ${3}
++)
+diff --git a/gst_client/meson.build b/gst_client/meson.build
+index badd7e1..8fe5eb4 100644
+--- a/gst_client/meson.build
++++ b/gst_client/meson.build
+@@ -16,11 +16,13 @@ executable(exe_name,
+ 
+ ## Create symbolic link to gst-client
+ meson.add_install_script('gst_client_symbolic_link.sh',
+-  get_option('bindir') +'/'+ exe_name,
+-  get_option('bindir') +'/'+ gst_client_name
++  get_option('bindir'),
++  exe_name,
++  gst_client_name
+ )
+ 
+ meson.add_install_script('gst_client_symbolic_link.sh',
+-  get_option('bindir') +'/'+ exe_name,
+-  get_option('bindir') +'/'+ 'gstd-client'
++  get_option('bindir'),
++  exe_name,
++  'gstd-client'
+ )
+diff --git a/gstd/gstd_symbolic_link.sh b/gstd/gstd_symbolic_link.sh
+index d8d7617..abf6087 100755
+--- a/gstd/gstd_symbolic_link.sh
++++ b/gstd/gstd_symbolic_link.sh
+@@ -1,7 +1,11 @@
+ #!/bin/sh
+ # This script is executed at install time to create and install symbolic links
+ 
+-# $1: target
+-# $2: link name
+-rm -f ${DESTDIR}${MESON_INSTALL_PREFIX}/$2
+-ln -s ${DESTDIR}${MESON_INSTALL_PREFIX}/$1 ${DESTDIR}${MESON_INSTALL_PREFIX}/$2
++# $1: bindir
++# $2: target
++# $3: link name
++(
++    cd ${DESTDIR}${MESON_INSTALL_PREFIX}/${1}
++    rm -f ${3}
++    ln -s ${2} ${3}
++)
+diff --git a/gstd/meson.build b/gstd/meson.build
+index 8e50241..5a32fa4 100644
+--- a/gstd/meson.build
++++ b/gstd/meson.build
+@@ -161,6 +161,7 @@ meson.add_install_script('gstd_chmod.sh','755',get_option('with-gstd-logstatedir
+ 
+ ## Create symbolic link to gstd
+ meson.add_install_script('gstd_symbolic_link.sh',
+-  get_option('bindir') +'/'+ exe_name,
+-  get_option('bindir') +'/'+ gstd_name
++  get_option('bindir'),
++  exe_name,
++  gstd_name
+ )
+-- 
+2.34.1
+

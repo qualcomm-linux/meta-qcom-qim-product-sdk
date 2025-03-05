@@ -41,10 +41,10 @@ repo sync
 
 ## Examples
 
-To download the `qcom-6.6.58-QLI.1.3.2-Ver.1.0` release
+To download the `qcom-6.6.65-QLI.1.4-Ver.1.0` release
 
 ```shell
-repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.58-QLI.1.3.2-Ver.1.0.xml
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.65-QLI.1.4-Ver.1.0.xml
 repo sync
 ```
 
@@ -58,9 +58,9 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.58-QLI.1.3.2-Ver.1.0_qim-product-sdk-1.2.2` release tag
+To download the `qcom-6.6.65-QLI.1.4-Ver.1.0_qim-product-sdk-1.1.1` release tag
 ```shell
-git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.58-QLI.1.3.2-Ver.1.0_qim-product-sdk-1.2.2 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.65-QLI.1.4-Ver.1.0_qim-product-sdk-1.1.1 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
@@ -87,6 +87,22 @@ QIM Product SDK output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/qim_
 # Flash image
 
 To flash the generated build, see the [Flash images](https://docs.qualcomm.com/bundle/publicresource/topics/80-70017-254/flash_images.html?vproduct=1601111740013072&latest=true)
+
+# Generate Standard SDK and Extensible SDK for Standalone Application Development
+
+To start Developer’s application development journey, Yocto project offering two different SDK’s (Standard SDK and extensible SDK) with including cross-development tool chains, libraries, headers, and symbols specific to the image to empower the developers. The Standard SDK is suitable for straightforward cross-compilation tasks, while the eSDK extends the capabilities to more complex workflows, making it a valuable choice for developers who need additional flexibility and functionality. To generate Standard SDK and eSDK for qcom-multimedia-image, please use following commands.
+
+Standard SDK:
+```shell
+bitbake -c do_populate_sdk qcom-multimedia-image
+```
+Standard SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcs6490-rb3gen2-vision-kit-toolchain-1.0.sh
+
+Extensible SDK:
+```shell
+bitbake -c do_populate_sdk_ext qcom-multimedia-image
+```
+Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/qcom-wayland-x86_64-qcom-multimedia-image-armv8-2a-qcs6490-rb3gen2-vision-kit-toolchain-ext-1.0.sh
 
 # Reference
 

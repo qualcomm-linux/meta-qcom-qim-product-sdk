@@ -69,7 +69,7 @@ SupplementaryGroups=system
 Type=forking
 EnvironmentFile=-/etc/default/gstd
 ExecStart=/usr/bin/gstd $OPTARGS
-PIDFile=/tmp/gstd.pid
+PIDFile=/usr/var/run/gstd/gstd.pid
 Restart=always
 
 [Install]

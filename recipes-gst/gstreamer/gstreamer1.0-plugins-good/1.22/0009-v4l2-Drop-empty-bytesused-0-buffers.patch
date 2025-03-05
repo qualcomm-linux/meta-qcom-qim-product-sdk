@@ -1,0 +1,64 @@
+From 6383266af763235e5c9f792f28c6b75aa6574242 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Mon, 24 Feb 2025 13:31:57 +0530
+Subject: [PATCH] v4l2: Drop empty (bytesused 0) buffers
+
+Upstream-Status: Pending
+
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+---
+ sys/v4l2/gstv4l2bufferpool.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 42dc6ae..67f3ed9 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -1307,6 +1307,9 @@ gst_v4l2_buffer_pool_dqbuf (GstV4l2BufferPool * pool, GstBuffer ** buffer,
+         group->planes[i].bytesused, i, group->buffer.flags,
+         GST_TIME_ARGS (timestamp), pool->num_queued, outbuf, old_buffer_state);
+ 
++    if (group->planes[i].bytesused == 0)
++      GST_BUFFER_FLAG_SET (outbuf, GST_BUFFER_FLAG_DROPPABLE);
++
+     if (GST_VIDEO_INFO_FORMAT (&pool->caps_info) == GST_VIDEO_FORMAT_ENCODED)
+       break;
+ 
+@@ -1928,6 +1931,11 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+                 GST_VIDEO_FORMAT_ENCODED && size < pool->size)
+               goto buffer_truncated;
+ 
++            if (GST_BUFFER_FLAG_IS_SET (*buf, GST_BUFFER_FLAG_DROPPABLE)) {
++              GST_BUFFER_FLAG_UNSET (*buf, GST_BUFFER_FLAG_DROPPABLE);
++              goto drop_buffer;
++            }
++
+             num_queued = g_atomic_int_get (&pool->num_queued);
+             GST_TRACE_OBJECT (pool, "Only %i buffer left in the capture queue.",
+                 num_queued);
+@@ -1989,6 +1997,11 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+           /* an queue the buffer again after the copy */
+           gst_v4l2_buffer_pool_complete_release_buffer (bpool, tmp, FALSE);
+ 
++          if (GST_BUFFER_FLAG_IS_SET (tmp, GST_BUFFER_FLAG_DROPPABLE)) {
++            GST_BUFFER_FLAG_UNSET (tmp, GST_BUFFER_FLAG_DROPPABLE);
++            goto drop_buffer;
++          }
++
+           if (ret != GST_FLOW_OK)
+             goto copy_failed;
+           break;
+@@ -2210,6 +2223,13 @@ start_failed:
+     GST_ERROR_OBJECT (pool, "failed to start streaming");
+     return GST_FLOW_ERROR;
+   }
++drop_buffer:
++  {
++    GST_WARNING_OBJECT (pool, "dropping 0 length buffer");
++    gst_buffer_unref (*buf);
++    *buf = NULL;
++    return GST_V4L2_FLOW_CORRUPTED_BUFFER;
++  }
+ }
+ 
+ void

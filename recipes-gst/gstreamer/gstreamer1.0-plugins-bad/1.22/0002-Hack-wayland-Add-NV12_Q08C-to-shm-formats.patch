@@ -1,0 +1,51 @@
+From 8a00f4bcecc0e03d92ffc8960a8f21cd0b94957b Mon Sep 17 00:00:00 2001
+From: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+Date: Fri, 7 Feb 2025 15:39:34 +0530
+Subject: [PATCH] [Hack] wayland: Add NV12_Q08C to shm formats
+
+ - Add NV12_Q08C to shm formats if present in dmabuf formats.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+---
+ ext/wayland/gstwaylandsink.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/ext/wayland/gstwaylandsink.c b/ext/wayland/gstwaylandsink.c
+index 89d462a..2e1fabe 100644
+--- a/ext/wayland/gstwaylandsink.c
++++ b/ext/wayland/gstwaylandsink.c
+@@ -545,9 +545,6 @@ gst_wayland_sink_get_caps (GstBaseSink * bsink, GstCaps * filter)
+       }
+     }
+ 
+-    gst_structure_take_value (gst_caps_get_structure (caps, 0), "format",
+-        &shm_list);
+-
+     /* Add corresponding dmabuf formats */
+     formats = gst_wl_display_get_dmabuf_formats (self->display);
+     modifiers = gst_wl_display_get_dmabuf_modifiers (self->display);
+@@ -559,9 +556,22 @@ gst_wayland_sink_get_caps (GstBaseSink * bsink, GstCaps * filter)
+         g_value_init (&value, G_TYPE_STRING);
+         g_value_set_static_string (&value, gst_video_format_to_string (gfmt));
+         gst_value_list_append_and_take_value (&dmabuf_list, &value);
++
++        /*Since SHM lacks a modifiers callback, add the NV12_Q08C color format
++        to the SHM formats list if it is present in the DMABuf color formats.
++        This ensures that file descriptors (fd) or dma-fds received with
++        the DMABuf memory feature are processed via the DMABuf backend*/
++        if (gfmt == GST_VIDEO_FORMAT_NV12_Q08C) {
++          g_value_init (&value, G_TYPE_STRING);
++          g_value_set_static_string (&value, gst_video_format_to_string (gfmt));
++          gst_value_list_append_and_take_value (&shm_list, &value);
++        }
+       }
+     }
+ 
++    gst_structure_take_value (gst_caps_get_structure (caps, 0), "format",
++        &shm_list);
++
+     gst_structure_take_value (gst_caps_get_structure (caps, 1), "format",
+         &dmabuf_list);
+ 

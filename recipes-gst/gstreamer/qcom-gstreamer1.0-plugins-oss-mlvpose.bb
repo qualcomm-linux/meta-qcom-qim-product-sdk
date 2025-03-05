@@ -14,7 +14,7 @@ DEPENDS += "cairo"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "ad05a0b64b3193e432528d081ee88421534366b4"
+SRCREV     = "043ee4e6f6b43989fd100614b1fdc99e616edc1c"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-plugin-mlvpose"
 S = "${WORKDIR}/gst-plugin-mlvpose"

@@ -1,0 +1,38 @@
+From d75e412d13a8ce3b01917e052efdf39d4aba3395 Mon Sep 17 00:00:00 2001
+From: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+Date: Thu, 6 Feb 2025 20:09:22 +0530
+Subject: [PATCH] v4l2: enc: Set sink format before src format
+
+Issue: Driver is providing default resolution instead of the required resolution if S_FMT of sink(output) is not set before S_FMT of src(capture).
+
+Fix: Set sink format before src format
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+---
+ sys/v4l2/gstv4l2videoenc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2videoenc.c b/sys/v4l2/gstv4l2videoenc.c
+index 33d025d..36c46c7 100644
+--- a/sys/v4l2/gstv4l2videoenc.c
++++ b/sys/v4l2/gstv4l2videoenc.c
+@@ -368,14 +368,14 @@ gst_v4l2_video_enc_set_format (GstVideoEncoder * encoder,
+     }
+   }
+ 
+-  if (!gst_video_encoder_negotiate (encoder))
+-    return FALSE;
+-
+   if (!gst_v4l2_object_set_format (self->v4l2output, state->caps, &error)) {
+     gst_v4l2_error (self, &error);
+     return FALSE;
+   }
+ 
++  if (!gst_video_encoder_negotiate (encoder))
++    return FALSE;
++
+   /* best effort */
+   gst_v4l2_object_setup_padding (self->v4l2output);
+ 

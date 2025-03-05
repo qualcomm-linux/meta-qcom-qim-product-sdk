@@ -29,6 +29,8 @@ GST_PLUGINS = " \
     qcom-gstreamer1.0-plugins-oss-dfs:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-metamux:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-metatransform:do_package_write_ipk \
+    qcom-gstreamer1.0-plugins-oss-mlaclassification:do_package_write_ipk \
+    qcom-gstreamer1.0-plugins-oss-mlaconverter:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-mldemux:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-mlmeta:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-mlmetaparser:do_package_write_ipk \
@@ -79,6 +81,7 @@ GST_SAMPLE_APPS = " \
     qcom-gst-ai-segmentation:do_package_write_ipk \
     qcom-gst-ai-superresolution:do_package_write_ipk \
     qcom-gst-ai-smartcodec-example:do_package_write_ipk \
+    qcom-gst-ai-usb-camera-app:do_package_write_ipk \
     qcom-gst-appsink-example:do_package_write_ipk \
     qcom-gst-audio-decode-example:do_package_write_ipk \
     qcom-gst-audio-encode-example:do_package_write_ipk \
@@ -95,26 +98,24 @@ GST_SAMPLE_APPS = " \
     qcom-gst-smartcodec-example:do_package_write_ipk \
     qcom-gst-snapshot-stream-example:do_package_write_ipk \
     qcom-gst-transform-example:do_package_write_ipk \
-    qcom-gst-usb-single-camera-app:do_package_write_ipk \
     qcom-gst-videocodec-concurrent-playback:do_package_write_ipk \
     qcom-gst-video-playback-example:do_package_write_ipk \
     qcom-gst-video-transcode-example:do_package_write_ipk \
     qcom-gst-webrtc-sendrecv-example:do_package_write_ipk \
     qcom-gst-weston-composition-example:do_package_write_ipk \
+    qcom-gst-ai-audio-classification:do_package_write_ipk \
     qcom-gst-ai-multistream-batch-inference:do_package_write_ipk \
     qcom-gst-python-examples:do_package_write_ipk \
     qcom-gst-ai-face-recognition:do_package_write_ipk \
     qcom-gst-ai-face-detection:do_package_write_ipk \
+    qcom-gst-ai-metadata-parser-example:do_package_write_ipk \
+    qcom-gst-jpg-decode-example:do_package_write_ipk \
   "
 
 GST_SAMPLE_APPS:remove:qcs9100 = " \
     qcom-gst-activate-deactivate-streams-runtime:do_package_write_ipk \
     qcom-gst-add-remove-streams-runtime:do_package_write_ipk \
     qcom-gst-add-streams-as-bundle-example:do_package_write_ipk \
-    qcom-gst-audio-decode-example:do_package_write_ipk \
-    qcom-gst-audio-encode-example:do_package_write_ipk \
-    qcom-gst-audio-video-encode:do_package_write_ipk \
-    qcom-gst-audio-video-playback:do_package_write_ipk \
     qcom-gst-camera-burst-capture-example:do_package_write_ipk \
     qcom-gst-camera-metadata-example:do_package_write_ipk \
     qcom-gst-camera-shdr-ldc-eis-example:do_package_write_ipk \
@@ -128,21 +129,13 @@ GST_SAMPLE_APPS:remove:qcs8300 = " \
     qcom-gst-activate-deactivate-streams-runtime:do_package_write_ipk \
     qcom-gst-add-remove-streams-runtime:do_package_write_ipk \
     qcom-gst-add-streams-as-bundle-example:do_package_write_ipk \
-    qcom-gst-appsink-example:do_package_write_ipk \
-    qcom-gst-audio-decode-example:do_package_write_ipk \
-    qcom-gst-audio-encode-example:do_package_write_ipk \
-    qcom-gst-audio-video-encode:do_package_write_ipk \
-    qcom-gst-audio-video-playback:do_package_write_ipk \
     qcom-gst-camera-burst-capture-example:do_package_write_ipk \
     qcom-gst-camera-metadata-example:do_package_write_ipk \
     qcom-gst-camera-shdr-ldc-eis-example:do_package_write_ipk \
-    qcom-gst-camera-single-stream-example:do_package_write_ipk \
     qcom-gst-camera-switch-example:do_package_write_ipk \
     qcom-gst-multi-camera-example:do_package_write_ipk \
-    qcom-gst-multi-stream-example:do_package_write_ipk \
     qcom-gst-snapshot-stream-example:do_package_write_ipk \
     qcom-gst-video-playback-example:do_package_write_ipk \
-    qcom-gst-weston-composition-example:do_package_write_ipk \
   "
 
 addtask do_generate_qim_sdk_setscene
