@@ -1,0 +1,50 @@
+From 12143dbf144d82bb643a9a437cfee8d3d428ce38 Mon Sep 17 00:00:00 2001
+From: Konstantin Motov <quic_kmotov@quicinc.com>
+Date: Wed, 26 Mar 2025 18:20:38 +0200
+Subject: [PATCH 1/2] v4l2: Use internal DMA buffer pool even without video
+ meta.
+
+Issue: V4L2 Decoder copy output data in system memory pool.
+
+Analysis: V4L2 plugins forward internal DMA buffers only if
+there is video meta in allocation query. But some elements
+does not interested by allocation query.
+
+Fix: Avoid buffer copy by forward DMA buffer even if next
+plugins do not required video meta. This is especially
+useful in case of pipelines where there is a Tee element.
+The Tee element does not propagate Video meta in allocation
+query one of downstream elements does not set video meta.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Konstantin Motov <quic_kmotov@quicinc.com>
+---
+ sys/v4l2/gstv4l2object.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index e8e35d3..1748991 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -5072,7 +5072,8 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+   guint size, min, max, own_min = 0;
+   gboolean update;
+   gboolean has_video_meta;
+-  gboolean can_share_own_pool, pushing_from_our_pool = FALSE;
++  gboolean can_share_own_pool = TRUE;
++  gboolean pushing_from_our_pool = FALSE;
+   GstAllocator *allocator = NULL;
+   GstAllocationParams params = { 0 };
+   guint video_idx;
+@@ -5121,8 +5122,6 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+       gst_v4l2_object_match_buffer_layout_from_struct (obj, params, caps, size);
+   }
+ 
+-  can_share_own_pool = (has_video_meta || !obj->need_video_meta);
+-
+   gst_v4l2_get_driver_min_buffers (obj);
+   /* We can't share our own pool, if it exceed V4L2 capacity */
+   if (min + obj->min_buffers + 1 > VIDEO_MAX_FRAME)
+-- 
+2.25.1
+

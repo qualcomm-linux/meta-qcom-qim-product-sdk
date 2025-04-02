@@ -1,0 +1,183 @@
+From 6335c5d00581fdb5fd83c9e57029a4cd72895a08 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Qian=20Hu=20=28=E8=83=A1=E9=AA=9E=29?=
+ <qian.hu@mediatek.com>
+Date: Mon, 19 Aug 2024 13:50:48 +0800
+Subject: [PATCH] meta: add aggregation function for allocation meta api params
+
+since tee do allocation query for each downstream element, and
+get allocation query params from them. this function will aggregate
+all params, and propose it for upstream element of tee
+
+Part-of: <https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/7201>
+
+Upstream-Status: Backport [from version 1.26]
+---
+ gst/gstmeta.c             | 59 +++++++++++++++++++++++++++++++++++++++
+ gst/gstmeta.h             | 28 +++++++++++++++++++
+ plugins/elements/gsttee.c | 13 ++++++++-
+ 3 files changed, 99 insertions(+), 1 deletion(-)
+
+diff --git a/gst/gstmeta.c b/gst/gstmeta.c
+index 9fc6198..185e1cd 100644
+--- a/gst/gstmeta.c
++++ b/gst/gstmeta.c
+@@ -58,6 +58,7 @@ static GRWLock lock;
+ GQuark _gst_meta_transform_copy;
+ GQuark _gst_meta_tag_memory;
+ GQuark _gst_meta_tag_memory_reference;
++static GQuark _gst_allocation_meta_params_aggregator_quark;
+ 
+ typedef struct
+ {
+@@ -91,6 +92,8 @@ _priv_gst_meta_initialize (void)
+   _gst_meta_tag_memory = g_quark_from_static_string ("memory");
+   _gst_meta_tag_memory_reference =
+       g_quark_from_static_string ("memory-reference");
++  _gst_allocation_meta_params_aggregator_quark =
++      g_quark_from_static_string ("GstAllocationMetaParamsAggregator");
+ }
+ 
+ static gboolean
+@@ -353,6 +356,62 @@ gst_meta_api_type_get_tags (GType api)
+   return (const gchar * const *) tags;
+ }
+ 
++/**
++ * gst_meta_api_type_aggregate_params:
++ * @api: the GType of the API for which the parameters are being aggregated.
++ * @aggregated_params: This structure will be updated with the
++ *                     combined parameters from both @params0 and @params1.
++ * @params0: a #GstStructure containing the new parameters to be aggregated.
++ * @params1: a #GstStructure containing the new parameters to be aggregated.
++ *
++ * When a element like `tee` decides the allocation, each downstream element may
++ * fill different parameters and pass them to gst_query_add_allocation_meta().
++ * In order to keep these parameters, a merge operation is needed. This
++ * aggregate function can combine the parameters from @params0 and @param1, and
++ * write the result back into @aggregated_params.
++ *
++ * Returns: %TRUE if the parameters were successfully aggregated, %FALSE otherwise.
++ *
++ * Since: 1.26
++ */
++gboolean
++gst_meta_api_type_aggregate_params (GType api,
++    GstStructure ** aggregated_params, const GstStructure * params0,
++    const GstStructure * params1)
++{
++  g_return_val_if_fail (api != 0, FALSE);
++  g_return_val_if_fail (aggregated_params != NULL, FALSE);
++
++  GstAllocationMetaParamsAggregator aggregator_func =
++      g_type_get_qdata (api, _gst_allocation_meta_params_aggregator_quark);
++
++  if (!aggregator_func)
++    return FALSE;
++
++  return aggregator_func (aggregated_params, params0, params1);
++}
++
++/**
++ * gst_meta_api_type_set_params_aggregator:
++ * @api: the #GType of the API for which the aggregator function is being set.
++ * @aggregator: (scope forever): the aggregator function to be associated with the given API
++ *              type.
++ *
++ * This function sets the aggregator function for a specific API type.
++ *
++ * Since: 1.26
++ */
++void
++gst_meta_api_type_set_params_aggregator (GType api,
++    GstAllocationMetaParamsAggregator aggregator)
++{
++  g_return_if_fail (api != 0);
++  g_return_if_fail (aggregator != NULL);
++
++  g_type_set_qdata (api, _gst_allocation_meta_params_aggregator_quark,
++      (GstAllocationMetaParamsAggregator) aggregator);
++}
++
+ /**
+  * gst_meta_register:
+  * @api: the type of the #GstMeta API
+diff --git a/gst/gstmeta.h b/gst/gstmeta.h
+index 44edbe0..56116df 100644
+--- a/gst/gstmeta.h
++++ b/gst/gstmeta.h
+@@ -223,6 +223,24 @@ typedef gboolean (*GstCustomMetaTransformFunction) (GstBuffer *transbuf,
+                                                     GstCustomMeta *meta, GstBuffer *buffer,
+                                                     GQuark type, gpointer data, gpointer user_data);
+ 
++/**
++ * GstAllocationMetaParamsAggregator:
++ * @aggregated_params: This structure will be updated with the
++ *                     combined parameters from both @params0 and @params1.
++ * @params0: a #GstStructure containing the new parameters to be aggregated.
++ * @params1: a #GstStructure containing the new parameters to be aggregated.
++ *
++ * The aggregator function will combine the parameters from @params0 and @param1
++ * and write the result back into @aggregated_params.
++ *
++ * Returns: %TRUE if the parameters were successfully aggregated, %FALSE otherwise.
++ *
++ * Since: 1.26
++ */
++typedef gboolean (*GstAllocationMetaParamsAggregator) (GstStructure ** aggregated_params,
++                                                       const GstStructure * params0,
++                                                       const GstStructure * params1);
++
+ /**
+  * GstMetaInfo:
+  * @api: tag identifying the metadata structure and api
+@@ -255,6 +273,16 @@ GType                gst_meta_api_type_register (const gchar *api,
+ GST_API
+ gboolean             gst_meta_api_type_has_tag  (GType api, GQuark tag);
+ 
++GST_API
++gboolean             gst_meta_api_type_aggregate_params (GType api,
++                                                         GstStructure ** aggregated_params,
++                                                         const GstStructure * params0,
++                                                         const GstStructure * params1);
++
++GST_API
++void                 gst_meta_api_type_set_params_aggregator (GType api,
++                                                              GstAllocationMetaParamsAggregator aggregator);
++
+ GST_API
+ const GstMetaInfo *  gst_meta_register          (GType api, const gchar *impl,
+                                                  gsize size,
+diff --git a/plugins/elements/gsttee.c b/plugins/elements/gsttee.c
+index dd90c38..27a4b76 100644
+--- a/plugins/elements/gsttee.c
++++ b/plugins/elements/gsttee.c
+@@ -685,6 +685,7 @@ gst_tee_query_allocation (const GValue * item, GValue * ret, gpointer user_data)
+     /* Afterward, aggregate the common params */
+     if (gst_query_find_allocation_meta (ctx->query, api, &ctx_index)) {
+       const GstStructure *ctx_param;
++      GstStructure *aggregated_params = NULL;
+ 
+       gst_query_parse_nth_allocation_meta (ctx->query, ctx_index, &ctx_param);
+ 
+@@ -692,7 +693,17 @@ gst_tee_query_allocation (const GValue * item, GValue * ret, gpointer user_data)
+       if (ctx_param == NULL && param == NULL)
+         continue;
+ 
+-      GST_DEBUG_OBJECT (ctx->tee, "Dropping allocation meta %s",
++      /* Aggregate the two params, if successful, add it to the query.
++       * and then, we always Drop the old params from the query. */
++      if (gst_meta_api_type_aggregate_params (api, &aggregated_params,
++              ctx_param, param)) {
++        gst_query_add_allocation_meta (ctx->query, api, aggregated_params);
++
++        if (aggregated_params)
++          gst_structure_free (aggregated_params);
++      }
++
++      GST_DEBUG_OBJECT (ctx->tee, "Dropping old allocation meta %s",
+           g_type_name (api));
+       gst_query_remove_nth_allocation_meta (ctx->query, ctx_index);
+     }
+-- 
+2.34.1
+

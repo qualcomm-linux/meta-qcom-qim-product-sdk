@@ -1,0 +1,42 @@
+From 3d8b334e5452401f71681fa1ce42c17448b995ec Mon Sep 17 00:00:00 2001
+From: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
+Date: Wed, 29 Jan 2025 19:07:33 +0530
+Subject: [PATCH] v4l2: decoder: Prefer colorimetry from acquired caps for
+ fixate
+
+Issue:
+By default, the caps fixation is taking the first value from the
+supported colorimetries. This is not being accepted by video driver.
+So, set_format is failing.
+
+Fix:
+Prefer colorimetry from acquired caps from the driver for fixate.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Raja Ganapathi Busam <quic_rbusam@quicinc.com>
+---
+ sys/v4l2/gstv4l2videodec.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 0de10d2..cffa7f1 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -468,6 +468,17 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   if (gst_caps_is_subset (acquired_caps, caps))
+     goto use_acquired_caps;
+ 
++  /* Prefer colorimetry from acquired caps for fixate */
++  {
++    GstStructure *temp_st;
++    st = gst_caps_get_structure (acquired_caps, 0);
++    temp_st = gst_caps_get_structure (caps, 0);
++    gst_structure_fixate_field_string (temp_st, "colorimetry",
++        gst_structure_get_string(st, "colorimetry"));
++    GST_DEBUG_OBJECT (self, "After colorimetry fixation caps: %" GST_PTR_FORMAT,
++        caps);
++  }
++
+   /* Fixate pixel format */
+   caps = gst_caps_fixate (caps);
+ 

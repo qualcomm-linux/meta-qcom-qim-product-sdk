@@ -1,0 +1,322 @@
+From 6a08ed07b8d45df1bf2291e9916664c53247ab0c Mon Sep 17 00:00:00 2001
+From: Mustafa Ali <quic_mustali@quicinc.com>
+Date: Thu, 6 Mar 2025 11:16:44 +0200
+Subject: [PATCH] gstreamer1.0-plugins-bad: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    gst-libs/gst/wayland
+    ext/wayland
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Mustafa Ali <quic_mustali@quicinc.com>
+---
+ ext/meson.build          | 162 ++++++++++++++++++++-------------------
+ gst-libs/gst/meson.build |  56 +++++++-------
+ meson.build              |  29 ++++---
+ meson_options.txt        |   4 +
+ 4 files changed, 136 insertions(+), 115 deletions(-)
+
+diff --git a/ext/meson.build b/ext/meson.build
+index 4f71398..66f670e 100644
+--- a/ext/meson.build
++++ b/ext/meson.build
+@@ -1,79 +1,83 @@
+-subdir('aes')
+-subdir('analyticsoverlay')
+-subdir('assrender')
+-subdir('aom')
+-subdir('avtp')
+-subdir('bs2b')
+-subdir('bz2')
+-subdir('chromaprint')
+-subdir('closedcaption')
+-subdir('codec2json')
+-subdir('colormanagement')
+-subdir('curl')
+-subdir('dash')
+-subdir('dc1394')
+-subdir('directfb')
+-subdir('dtls')
+-subdir('dts')
+-subdir('faac')
+-subdir('faad')
+-subdir('fdkaac')
+-subdir('flite')
+-subdir('fluidsynth')
+-subdir('gme')
+-subdir('gs')
+-subdir('gsm')
+-subdir('gtk')
+-subdir('hls')
+-subdir('iqa')
+-subdir('isac')
+-subdir('ladspa')
+-subdir('lc3')
+-subdir('ldac')
+-subdir('libde265')
+-subdir('lv2')
+-subdir('mdns')
+-subdir('modplug')
+-subdir('mpeg2enc')
+-subdir('mplex')
+-subdir('musepack')
+-subdir('neon')
+-subdir('onnx')
+-subdir('openal')
+-subdir('openaptx')
+-subdir('opencv')
+-subdir('openexr')
+-subdir('openh264')
+-subdir('openjpeg')
+-subdir('openmpt')
+-subdir('openni2')
+-subdir('opus')
+-subdir('qroverlay')
+-subdir('qt6d3d11')
+-subdir('resindvd')
+-subdir('rsvg')
+-subdir('rtmp')
+-subdir('sbc')
+-subdir('sctp')
+-subdir('smoothstreaming')
+-subdir('sndfile')
+-subdir('soundtouch')
+-subdir('spandsp')
+-subdir('srt')
+-subdir('srtp')
+-subdir('svtav1')
+-subdir('svthevcenc')
+-subdir('teletextdec')
+-subdir('ttml')
+-subdir('voaacenc')
+-subdir('voamrwbenc')
+-subdir('vulkan')
+-subdir('wayland')
+-subdir('webrtc')
+-subdir('webrtcdsp')
+-subdir('webp')
+-subdir('wildmidi')
+-subdir('wpe')
+-subdir('x265')
+-subdir('zxing')
+-subdir('zbar')
++if build_all_plugins
++  subdir('aes')
++  subdir('analyticsoverlay')
++  subdir('assrender')
++  subdir('aom')
++  subdir('avtp')
++  subdir('bs2b')
++  subdir('bz2')
++  subdir('chromaprint')
++  subdir('closedcaption')
++  subdir('codec2json')
++  subdir('colormanagement')
++  subdir('curl')
++  subdir('dash')
++  subdir('dc1394')
++  subdir('directfb')
++  subdir('dtls')
++  subdir('dts')
++  subdir('faac')
++  subdir('faad')
++  subdir('fdkaac')
++  subdir('flite')
++  subdir('fluidsynth')
++  subdir('gme')
++  subdir('gs')
++  subdir('gsm')
++  subdir('gtk')
++  subdir('hls')
++  subdir('iqa')
++  subdir('isac')
++  subdir('ladspa')
++  subdir('lc3')
++  subdir('ldac')
++  subdir('libde265')
++  subdir('lv2')
++  subdir('mdns')
++  subdir('modplug')
++  subdir('mpeg2enc')
++  subdir('mplex')
++  subdir('musepack')
++  subdir('neon')
++  subdir('onnx')
++  subdir('openal')
++  subdir('openaptx')
++  subdir('opencv')
++  subdir('openexr')
++  subdir('openh264')
++  subdir('openjpeg')
++  subdir('openmpt')
++  subdir('openni2')
++  subdir('opus')
++  subdir('qroverlay')
++  subdir('qt6d3d11')
++  subdir('resindvd')
++  subdir('rsvg')
++  subdir('rtmp')
++  subdir('sbc')
++  subdir('sctp')
++  subdir('smoothstreaming')
++  subdir('sndfile')
++  subdir('soundtouch')
++  subdir('spandsp')
++  subdir('srt')
++  subdir('srtp')
++  subdir('svtav1')
++  subdir('svthevcenc')
++  subdir('teletextdec')
++  subdir('ttml')
++  subdir('voaacenc')
++  subdir('voamrwbenc')
++  subdir('vulkan')
++  subdir('wayland')
++  subdir('webrtc')
++  subdir('webrtcdsp')
++  subdir('webp')
++  subdir('wildmidi')
++  subdir('wpe')
++  subdir('x265')
++  subdir('zxing')
++  subdir('zbar')
++else
++  subdir('wayland')
++endif
+diff --git a/gst-libs/gst/meson.build b/gst-libs/gst/meson.build
+index 6207f33..c280852 100644
+--- a/gst-libs/gst/meson.build
++++ b/gst-libs/gst/meson.build
+@@ -1,27 +1,31 @@
+-subdir('uridownloader')
++if build_all_plugins
++  subdir('uridownloader')
+ 
+-subdir('adaptivedemux')
+-subdir('audio')
+-subdir('basecamerabinsrc')
+-subdir('codecparsers')
+-subdir('codecs')
+-subdir('d3d11')
+-# cuda can depend on d3d11
+-subdir('cuda')
+-subdir('dxva')
+-subdir('insertbin')
+-subdir('interfaces')
+-subdir('isoff')
+-subdir('mpegts')
+-subdir('mse')
+-subdir('opencv')
+-subdir('play')
+-subdir('player')
+-subdir('sctp')
+-subdir('transcoder')
+-subdir('va')
+-subdir('vulkan')
+-subdir('wayland')
+-subdir('webrtc')
+-subdir('winrt')
+-subdir('analytics')
++  subdir('adaptivedemux')
++  subdir('audio')
++  subdir('basecamerabinsrc')
++  subdir('codecparsers')
++  subdir('codecs')
++  subdir('d3d11')
++  # cuda can depend on d3d11
++  subdir('cuda')
++  subdir('dxva')
++  subdir('insertbin')
++  subdir('interfaces')
++  subdir('isoff')
++  subdir('mpegts')
++  subdir('mse')
++  subdir('opencv')
++  subdir('play')
++  subdir('player')
++  subdir('sctp')
++  subdir('transcoder')
++  subdir('va')
++  subdir('vulkan')
++  subdir('wayland')
++  subdir('webrtc')
++  subdir('winrt')
++  subdir('analytics')
++else
++  subdir('wayland')
++endif
+diff --git a/meson.build b/meson.build
+index 9ae3b41..93628a7 100644
+--- a/meson.build
++++ b/meson.build
+@@ -566,13 +566,18 @@ pkgconfig.generate(
+ 
+ gpl_allowed = get_option('gpl').allowed()
+ 
++build_all_plugins = get_option('build-all-plugins')
++
+ subdir('gst-libs')
+-subdir('gst')
+-subdir('sys')
+ subdir('ext')
+-subdir('tests')
+-subdir('data')
+-subdir('tools')
++
++if build_all_plugins
++  subdir('sys')
++  subdir('ext')
++  subdir('tests')
++  subdir('data')
++  subdir('tools')
++endif
+ 
+ if have_orcc
+   update_orc_dist_files = find_program('scripts/update-orc-dist-files.py')
+@@ -598,11 +603,13 @@ if have_orcc
+ endif
+ 
+ # xgettext is optional (on Windows for instance)
+-if find_program('xgettext', required : get_option('nls')).found()
+-  subdir('po')
+-endif
++if build_all_plugins
++  if find_program('xgettext', required : get_option('nls')).found()
++    subdir('po')
++  endif
+ 
+-subdir('scripts')
++  subdir('scripts')
++endif
+ 
+ # Set release date
+ if gst_version_nano == 0
+@@ -621,7 +628,9 @@ configure_file(output : 'config.h', configuration : cdata)
+ 
+ meson.add_dist_script('scripts/gen-changelog.py', meson.project_name(), '1.22.0', meson.project_version())
+ 
+-subdir('docs')
++if build_all_plugins
++  subdir('docs')
++endif
+ 
+ plugin_names = []
+ gst_plugins = []
+diff --git a/meson_options.txt b/meson_options.txt
+index 5f91f42..b3e6813 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -263,3 +263,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build-all-plugins', type : 'boolean', yield : true,
++       description : 'Enable build of all plugins')
+-- 
+2.25.1
+

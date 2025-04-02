@@ -1,0 +1,103 @@
+From 6335c5d00581fdb5fd83c9e57029a4cd72895a08 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Qian=20Hu=20=28=E8=83=A1=E9=AA=9E=29?=
+ <qian.hu@mediatek.com>
+Date: Mon, 19 Aug 2024 13:50:48 +0800
+Subject: [PATCH] meta: add aggregation function for allocation meta api params
+
+since tee do allocation query for each downstream element, and
+get allocation query params from them. this function will aggregate
+all params, and propose it for upstream element of tee
+
+Part-of: <https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/7201>
+
+Upstream-Status: Backport [from version 1.26]
+---
+ gst-libs/gst/video/gstvideometa.c | 65 +++++++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
+
+diff --git a/gst-libs/gst/video/gstvideometa.c b/gst-libs/gst/video/gstvideometa.c
+index f9f1a15..2c7f344 100644
+--- a/gst-libs/gst/video/gstvideometa.c
++++ b/gst-libs/gst/video/gstvideometa.c
+@@ -117,6 +117,68 @@ gst_video_meta_transform (GstBuffer * dest, GstMeta * meta,
+   return TRUE;
+ }
+ 
++static gboolean
++gst_video_meta_api_params_aggregator (GstStructure ** aggregated_params,
++    const GstStructure * params0, const GstStructure * params1)
++{
++  GstVideoAlignment align0;
++  GstVideoAlignment align1;
++  GstVideoAlignment aggregated_align;
++
++  gst_video_alignment_reset (&align0);
++  gst_video_alignment_reset (&align1);
++  gst_video_alignment_reset (&aggregated_align);
++
++  if (params0 && (!gst_structure_has_name (params0, "video-meta") ||
++          !gst_buffer_pool_config_get_video_alignment (params0, &align0))) {
++    GST_WARNING ("Invalid params");
++    params0 = NULL;
++  }
++
++  if (params1 && (!gst_structure_has_name (params1, "video-meta") ||
++          !gst_buffer_pool_config_get_video_alignment (params1, &align1))) {
++    GST_WARNING ("Invalid params");
++    params1 = NULL;
++  }
++
++  if (!params0 && !params1) {
++    *aggregated_params = NULL;
++    return TRUE;
++  }
++
++  if (params0 && !params1) {
++    *aggregated_params = gst_structure_copy (params0);
++    return TRUE;
++  }
++
++  if (!params0 && params1) {
++    *aggregated_params = gst_structure_copy (params1);
++    return TRUE;
++  }
++
++  aggregated_align.padding_top = MAX (align0.padding_top, align1.padding_top);
++
++  aggregated_align.padding_bottom =
++      MAX (align0.padding_bottom, align1.padding_bottom);
++
++  aggregated_align.padding_left =
++      MAX (align0.padding_left, align1.padding_left);
++
++  aggregated_align.padding_right =
++      MAX (align0.padding_right, align1.padding_right);
++
++  for (int n = 0; n < GST_VIDEO_MAX_PLANES; ++n)
++    aggregated_align.stride_align[n] =
++        align0.stride_align[n] | align1.stride_align[n];
++
++  *aggregated_params = gst_structure_new_empty ("video-meta");
++
++  gst_buffer_pool_config_set_video_alignment (*aggregated_params,
++      &aggregated_align);
++
++  return TRUE;
++}
++
+ GType
+ gst_video_meta_api_get_type (void)
+ {
+@@ -129,6 +191,9 @@ gst_video_meta_api_get_type (void)
+ 
+   if (g_once_init_enter (&type)) {
+     GType _type = gst_meta_api_type_register ("GstVideoMetaAPI", tags);
++
++    gst_meta_api_type_set_params_aggregator (_type,
++        gst_video_meta_api_params_aggregator);
+     g_once_init_leave (&type, _type);
+   }
+   return type;
+-- 
+2.34.1
+

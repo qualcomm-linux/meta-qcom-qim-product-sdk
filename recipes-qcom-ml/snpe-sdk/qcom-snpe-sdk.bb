@@ -9,7 +9,7 @@ DESCRIPTION      = "Snapdragon Neural Processing Engine SDK"
 
 SRC_URI[sha256sum] = "${QNPSDK_SRC_SHID}"
 
-SRC_URI = "https://softwarecenter.qualcomm.com/api/download/software/qualcomm_neural_processing_sdk/v${QNPSDK_SRC_VER}.zip"
+SRC_URI = "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/${QNPSDK_SRC_VER}/v${QNPSDK_SRC_VER}.zip"
 
 SNPE_DIR = "${WORKDIR}/qairt/${QNPSDK_SRC_VER}"
 

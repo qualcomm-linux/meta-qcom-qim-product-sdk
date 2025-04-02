@@ -1,0 +1,28 @@
+From 22fe0783e5c9ff27cd0fbfdcf178a2414a706fb6 Mon Sep 17 00:00:00 2001
+From: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+Date: Fri, 28 Feb 2025 19:09:07 +0530
+Subject: [PATCH] v4l2: Add KEEP_MAPPED flag to the allocated buffers
+
+ - This flag prevents the same buffer from being mapped twice.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+---
+ sys/v4l2/gstv4l2allocator.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/sys/v4l2/gstv4l2allocator.c b/sys/v4l2/gstv4l2allocator.c
+index 7621668..1429054 100644
+--- a/sys/v4l2/gstv4l2allocator.c
++++ b/sys/v4l2/gstv4l2allocator.c
+@@ -925,7 +925,8 @@ gst_v4l2_allocator_alloc_dmabuf (GstV4l2Allocator * allocator,
+     mem = (GstV4l2Memory *) group->mem[i];
+ 
+     dma_mem = gst_fd_allocator_alloc (dmabuf_allocator, mem->dmafd,
+-        group->planes[i].length, GST_FD_MEMORY_FLAG_DONT_CLOSE);
++        group->planes[i].length,
++            GST_FD_MEMORY_FLAG_DONT_CLOSE | GST_FD_MEMORY_FLAG_KEEP_MAPPED);
+     gst_memory_resize (dma_mem, group->planes[i].data_offset,
+         group->planes[i].length - group->planes[i].data_offset);
+ 

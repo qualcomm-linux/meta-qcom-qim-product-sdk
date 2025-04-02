@@ -1,0 +1,73 @@
+From bf5ffedaa735190c879404edf6e293a9736b1d95 Mon Sep 17 00:00:00 2001
+From: Arindam Biswas <quic_arinbisw@quicinc.com>
+Date: Fri, 14 Feb 2025 18:06:51 +0530
+Subject: [PATCH] v4l2: Add support for AV1 format
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Arindam Biswas <quic_arinbisw@quicinc.com>
+---
+ sys/v4l2/ext/videodev2.h   | 1 +
+ sys/v4l2/gstv4l2object.c   | 6 ++++++
+ sys/v4l2/gstv4l2videodec.c | 2 ++
+ 3 files changed, 9 insertions(+)
+
+diff --git a/sys/v4l2/ext/videodev2.h b/sys/v4l2/ext/videodev2.h
+index e3b4ab3..da5e0c1 100644
+--- a/sys/v4l2/ext/videodev2.h
++++ b/sys/v4l2/ext/videodev2.h
+@@ -736,6 +736,7 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_SPK      v4l2_fourcc('S', 'P', 'K', '0') /* Sorenson Spark */
+ #define V4L2_PIX_FMT_RV30     v4l2_fourcc('R', 'V', '3', '0') /* RealVideo 8 */
+ #define V4L2_PIX_FMT_RV40     v4l2_fourcc('R', 'V', '4', '0') /* RealVideo 9 & 10 */
++#define V4L2_PIX_FMT_AV1     v4l2_fourcc('A', 'V', '1', '0') /* AV1 */
+ 
+ /*  Vendor-specific formats   */
+ #define V4L2_PIX_FMT_CPIA1    v4l2_fourcc('C', 'P', 'I', 'A') /* cpia1 YUV */
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index b4a51e9..ee72479 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -216,6 +216,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
+   {MAP_FMT (VC1_ANNEX_L, ENCODED),  GST_V4L2_CODEC},
+   {MAP_FMT (VP8, ENCODED),          GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
+   {MAP_FMT (VP9, ENCODED),          GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
++  {MAP_FMT (AV1, ENCODED),         GST_V4L2_CODEC},
+ 
+   /*  Vendor-specific formats   */
+   {MAP_FMT (WNVA, ENCODED),     GST_V4L2_CODEC | GST_V4L2_RESOLUTION_AND_RATE},
+@@ -1504,6 +1505,9 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
+     case V4L2_PIX_FMT_VP9:
+       structure = gst_structure_new_empty ("video/x-vp9");
+       break;
++    case V4L2_PIX_FMT_AV1:
++      structure = gst_structure_new_empty ("video/x-av1");
++      break;
+     case V4L2_PIX_FMT_DV:
+       structure =
+           gst_structure_new ("video/x-dv", "systemstream", G_TYPE_BOOLEAN, TRUE,
+@@ -1910,6 +1914,8 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+     fourcc = V4L2_PIX_FMT_VP8;
+   } else if (g_str_equal (mimetype, "video/x-vp9")) {
+     fourcc = V4L2_PIX_FMT_VP9;
++  } else if (g_str_equal (mimetype, "video/x-av1")) {
++      fourcc = V4L2_PIX_FMT_AV1;
+   } else if (g_str_equal (mimetype, "video/x-bayer")) {
+     const gchar *format = gst_structure_get_string (structure, "format");
+     if (format) {
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 7814bae..b6a0e52 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -1393,6 +1393,8 @@ G_STMT_START { \
+   } else if (gst_structure_has_name (s, "video/x-vp9")) {
+     SET_META ("VP9");
+     cdata->codec = gst_v4l2_vp9_get_codec ();
++  } else if (gst_structure_has_name (s, "video/x-av1")) {
++    SET_META ("AV1");
+   } else if (gst_structure_has_name (s, "video/x-bayer")) {
+     SET_META ("BAYER");
+   } else if (gst_structure_has_name (s, "video/x-sonix")) {
+-- 
+2.34.1
+

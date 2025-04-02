@@ -21,10 +21,10 @@ DEPENDS += "libsoup-2.4"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "043ee4e6f6b43989fd100614b1fdc99e616edc1c"
+SRCREV     = "2e78a7b6dc7f93d5116af274c52e1a80ae8d5015"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};rev=${SRCREV};subpath=gst-plugin-examples"
-S = "${WORKDIR}/gst-plugin-examples"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH}"
+S = "${WORKDIR}/git/gst-plugin-examples"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"

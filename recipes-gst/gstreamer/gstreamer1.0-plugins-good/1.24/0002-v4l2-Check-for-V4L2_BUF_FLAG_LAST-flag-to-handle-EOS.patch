@@ -1,0 +1,45 @@
+From de7ab851c11906d0dbfc2966a155371c5b5a61c8 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Mon, 6 Jan 2025 17:32:21 +0530
+Subject: [PATCH] v4l2: Check for V4L2_BUF_FLAG_LAST flag to handle EOS
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+---
+ sys/v4l2/gstv4l2allocator.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2allocator.c b/sys/v4l2/gstv4l2allocator.c
+index 059039e..a621f3f 100644
+--- a/sys/v4l2/gstv4l2allocator.c
++++ b/sys/v4l2/gstv4l2allocator.c
+@@ -1320,6 +1320,18 @@ gst_v4l2_allocator_dqbuf (GstV4l2Allocator * allocator,
+   if (obj->ioctl (obj->video_fd, VIDIOC_DQBUF, &buffer) < 0)
+     goto error;
+ 
++  GST_LOG_OBJECT (allocator, "dequeued buffer %i (flags 0x%X)", buffer.index,
++      buffer.flags);
++
++  /* TODO: Temporary change to handle EOS. Default implementation to check for
++   * EOS is with driver returning EPIPE error on dqbuf after last 0 bytesize
++   * buffer is dequeued. But the video driver is not signalling the poll after
++   * last buffer is dequeued. This is causing the client to wait infinetly.
++   * So check for v4l2 last buffer flag on EOS buffer.
++   */
++  if (buffer.flags & V4L2_BUF_FLAG_LAST)
++    return GST_V4L2_FLOW_LAST_BUFFER;
++
+   group = allocator->groups[buffer.index];
+ 
+   if (!IS_QUEUED (group->buffer)) {
+@@ -1330,9 +1342,6 @@ gst_v4l2_allocator_dqbuf (GstV4l2Allocator * allocator,
+ 
+   group->buffer = buffer;
+ 
+-  GST_LOG_OBJECT (allocator, "dequeued buffer %i (flags 0x%X)", buffer.index,
+-      buffer.flags);
+-
+   if (IS_QUEUED (group->buffer)) {
+     GST_DEBUG_OBJECT (allocator,
+         "driver pretends buffer is queued even if dequeue succeeded");

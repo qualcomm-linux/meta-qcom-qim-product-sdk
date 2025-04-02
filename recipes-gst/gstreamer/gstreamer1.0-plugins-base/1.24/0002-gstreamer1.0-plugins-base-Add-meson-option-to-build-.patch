@@ -1,0 +1,119 @@
+From 7011a0b76069d6af3b9eceaddb7cb9c05e0cd23e Mon Sep 17 00:00:00 2001
+From: Stilyan Uzunov <quic_suzunov@quicinc.com>
+Date: Thu, 20 Feb 2025 14:07:34 +0000
+Subject: [PATCH] gstreamer1.0-plugins-base: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    gst-libs/gst/video
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Stilyan Uzunov <quic_suzunov@quicinc.com>
+---
+ gst-libs/gst/meson.build | 30 +++++++++++++++++-------------
+ meson.build              | 34 +++++++++++++++++++++-------------
+ meson_options.txt        |  4 ++++
+ 3 files changed, 42 insertions(+), 26 deletions(-)
+
+diff --git a/gst-libs/gst/meson.build b/gst-libs/gst/meson.build
+index 42c0a6f..2dd2b7f 100644
+--- a/gst-libs/gst/meson.build
++++ b/gst-libs/gst/meson.build
+@@ -1,13 +1,17 @@
+-subdir('tag')
+-subdir('fft')
+-subdir('video')
+-subdir('audio')
+-subdir('rtp')
+-subdir('pbutils')
+-subdir('sdp')
+-subdir('rtsp')
+-subdir('riff')
+-subdir('app')
+-subdir('allocators')
+-# FIXME: gl deps are automagic
+-subdir('gl')
++if build_all_plugins
++  subdir('tag')
++  subdir('fft')
++  subdir('video')
++  subdir('audio')
++  subdir('rtp')
++  subdir('pbutils')
++  subdir('sdp')
++  subdir('rtsp')
++  subdir('riff')
++  subdir('app')
++  subdir('allocators')
++  # FIXME: gl deps are automagic
++  subdir('gl')
++else
++  subdir('video')
++endif
+diff --git a/meson.build b/meson.build
+index c0b2016..4069da6 100644
+--- a/meson.build
++++ b/meson.build
+@@ -481,24 +481,32 @@ pkgconfig_subdirs = ['gstreamer-1.0']
+ meson_pkg_config_file_fixup_script = find_program('scripts/meson-pkg-config-file-fixup.py')
+
+ python3 = import('python').find_installation()
++
++build_all_plugins = get_option('build-all-plugins')
++
+ subdir('gst-libs')
+-subdir('gst')
+-subdir('ext')
+-subdir('sys')
+-subdir('tools')
+-subdir('tests')
+
+-# xgettext is optional (on Windows for instance)
+-if find_program('xgettext', required : get_option('nls')).found()
+-  subdir('po')
++if build_all_plugins
++  subdir('gst')
++  subdir('ext')
++  subdir('sys')
++  subdir('tools')
++  subdir('tests')
++
++  # xgettext is optional (on Windows for instance)
++  if find_program('xgettext', required : get_option('nls')).found()
++    subdir('po')
++  endif
++  subdir('docs')
++  subdir('scripts')
+ endif
+-subdir('docs')
+-subdir('scripts')
+
+ base_libraries = ['allocators', 'app', 'audio', 'fft', 'pbutils', 'riff', 'rtp', 'rtsp', 'sdp', 'tag', 'video']
+-if build_gstgl
+-  core_conf.set('HAVE_GL', 1)
+-  base_libraries += 'gl'
++if build_all_plugins
++  if build_gstgl
++    core_conf.set('HAVE_GL', 1)
++    base_libraries += 'gl'
++  endif
+ endif
+
+ pkgconfig_plugins_base_libs_variables = [
+diff --git a/meson_options.txt b/meson_options.txt
+index 0f307b2..0b6b1fc 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -91,3 +91,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build-all-plugins', type : 'boolean', yield : true,
++       description : 'Enable build of all plugins')
+--
+2.43.0
+

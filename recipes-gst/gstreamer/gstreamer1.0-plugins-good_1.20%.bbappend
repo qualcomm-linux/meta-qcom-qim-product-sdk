@@ -1,6 +1,10 @@
 DEPENDS:append:qcom-custom-bsp = " qemu-native"
 DEPENDS:append:qcs9100 = " qcom-displaydlkm"
 DEPENDS:append:qcs8300 = " qcom-displaydlkm"
+DEPENDS:append:qcom-custom-bsp = " gtk+3"
+
+PACKAGECONFIG:append:qcom-custom-bsp = " gtk"
+
 FILESEXTRAPATHS:prepend:qcom-custom-bsp := "${THISDIR}/gstreamer1.0-plugins-good/1.20:"
 
 SRC_URI:append:qcom-custom-bsp = "\

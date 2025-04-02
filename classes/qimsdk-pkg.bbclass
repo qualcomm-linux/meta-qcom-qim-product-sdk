@@ -147,6 +147,7 @@ do_generate_qim_sdk[stamp-extra-info] = "${MACHINE_ARCH}"
 do_generate_qim_sdk[depends] = " \
     qcom-qim-sdk:do_patch \
     gdk-pixbuf:do_package_write_ipk \
+    gtk+3:do_package_write_ipk \
     hiredis:do_package_write_ipk \
     json-glib:do_package_write_ipk \
     liba52:do_package_write_ipk \
@@ -225,7 +226,7 @@ def get_pkgs_list(d):
     deploydir = d.getVar("DEPLOY_DIR", True)
     timestampfile = os.path.join(deploydir, "qimsdk-timestamp")
     pkgslist = []
-    dep_list = ["libgdk-pixbuf-2.0-0", "liba52-0", "a52"
+    dep_list = ["libgdk-pixbuf-2.0-0", "liba52-0", "a52", "gtk+3"
                 "libdaemon0", "libgudev-1.0-0", "lame_", "libmp3lame0",
                 "libpsl5", "librsvg-2-2", "libsoup-2.4_",
                 "libtheora_", "libwebp_", "mpg123_",
