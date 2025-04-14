@@ -17,8 +17,8 @@ SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gs
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
 SRCREV     = "2e78a7b6dc7f93d5116af274c52e1a80ae8d5015"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH}"
-S = "${WORKDIR}/git/gst-plugin-qmmfsrc"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-qmmfsrc"
+S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"

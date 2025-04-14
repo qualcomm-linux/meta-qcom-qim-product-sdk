@@ -19,8 +19,8 @@ SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gs
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
 SRCREV     = "2e78a7b6dc7f93d5116af274c52e1a80ae8d5015"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH}"
-S = "${WORKDIR}/git/gst-sample-apps/gst-weston-composition-example"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-weston-composition-example"
+S = "${WORKDIR}/gst-weston-composition-example"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"
