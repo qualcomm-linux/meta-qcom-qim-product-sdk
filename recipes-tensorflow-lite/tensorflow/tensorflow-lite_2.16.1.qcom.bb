@@ -71,6 +71,7 @@ python () {
         d.appendVar('EXTRA_OECMAKE', ' -DXNNPACK_ENABLE_ARM_BF16=OFF')
 }
 
+INSANE_SKIP:${PN} = "dev-so"
 FILES_${PN} = "${libdir}/lib*.so ${bindir}/*"
 FILES_${PN}-dev += "${includedir}"
 
@@ -87,9 +88,6 @@ do_install:append() {
         cd ${S}/${HPATH}
         cp --parents $(find . \( ! -name "*hexagon*" -name "*.h*" \)) ${D}${includedir}/${HPATH}
     done
-
-    install -d ${D}${libdir}
-    install ${B}/libtensorflow*.so ${D}${libdir}/
 
     install -d ${D}${includedir}/gemmlowp
 

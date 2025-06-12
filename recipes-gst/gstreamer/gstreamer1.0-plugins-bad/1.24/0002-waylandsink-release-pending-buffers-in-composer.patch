@@ -1,0 +1,193 @@
+From ff4c4e033e06b680590b91b49be56ca88e576c17 Mon Sep 17 00:00:00 2001
+From: "Petar G. Georgiev" <petarg@codeaurora.org>
+Date: Fri, 29 Nov 2019 14:56:55 +0200
+Subject: [PATCH 2/4] waylandsink: release pending buffers in composer
+
+- Add functionality to forcibly release any pending buffers in the
+  wayland compositor at GST_QUERY_DRAIN, GST_EVENT_FLUSH_START and
+  at GST_STATE_CHANGE_PAUSED_TO_READY.
+- This is needed because some live sources may require all buffers
+  to be returned when transitioning to READY state, some decoders
+  may want them returned when DRAIN query is sent or During FLUSH
+  events buffer must be returned as well.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Petar G. Georgiev <quic_petarg@quicinc.com>
+---
+ ext/wayland/gstwaylandsink.c        | 38 +++++++++++++++++++++++++++--
+ gst-libs/gst/wayland/gstwlbuffer.c  | 23 ++++++++---------
+ gst-libs/gst/wayland/gstwldisplay.c | 16 ++++++++++++
+ gst-libs/gst/wayland/gstwldisplay.h |  3 +++
+ 4 files changed, 67 insertions(+), 13 deletions(-)
+
+diff --git a/ext/wayland/gstwaylandsink.c b/ext/wayland/gstwaylandsink.c
+index a6613a1..27440b7 100644
+--- a/ext/wayland/gstwaylandsink.c
++++ b/ext/wayland/gstwaylandsink.c
+@@ -87,6 +87,7 @@ static GstStateChangeReturn gst_wayland_sink_change_state (GstElement * element,
+ static void gst_wayland_sink_set_context (GstElement * element,
+     GstContext * context);
+ 
++static gboolean gst_wayland_sink_query (GstBaseSink * bsink, GstQuery * query);
+ static gboolean gst_wayland_sink_event (GstBaseSink * bsink, GstEvent * event);
+ static GstCaps *gst_wayland_sink_get_caps (GstBaseSink * bsink,
+     GstCaps * filter);
+@@ -142,6 +143,7 @@ gst_wayland_sink_class_init (GstWaylandSinkClass * klass)
+   gstelement_class->set_context =
+       GST_DEBUG_FUNCPTR (gst_wayland_sink_set_context);
+ 
++  gstbasesink_class->query = GST_DEBUG_FUNCPTR (gst_wayland_sink_query);
+   gstbasesink_class->event = GST_DEBUG_FUNCPTR (gst_wayland_sink_event);
+   gstbasesink_class->get_caps = GST_DEBUG_FUNCPTR (gst_wayland_sink_get_caps);
+   gstbasesink_class->set_caps = GST_DEBUG_FUNCPTR (gst_wayland_sink_set_caps);
+@@ -475,6 +477,7 @@ gst_wayland_sink_change_state (GstElement * element, GstStateChange transition)
+         }
+       }
+ 
++      gst_wl_display_force_release_buffers (self->display);
+       break;
+     case GST_STATE_CHANGE_READY_TO_NULL:
+       g_mutex_lock (&self->display_lock);
+@@ -525,6 +528,30 @@ gst_wayland_sink_set_context (GstElement * element, GstContext * context)
+     GST_ELEMENT_CLASS (parent_class)->set_context (element, context);
+ }
+ 
++static gboolean
++gst_wayland_sink_query (GstBaseSink * bsink, GstQuery * query)
++{
++  GstWaylandSink *self = GST_WAYLAND_SINK (bsink);
++  gboolean ret;
++
++  GST_DEBUG_OBJECT (self, "handling %s query", GST_QUERY_TYPE_NAME (query));
++
++  /* First execute the parent class query function. */
++  ret = GST_BASE_SINK_CLASS (parent_class)->query (bsink, query);
++
++  switch (GST_QUERY_TYPE (query)) {
++    case GST_QUERY_DRAIN:
++      /* Force release any buffers in the wayland composer. */
++      gst_buffer_replace (&self->last_buffer, NULL);
++      gst_wl_display_force_release_buffers (self->display);
++      break;
++    default:
++      break;
++  }
++
++  return ret;
++}
++
+ static gboolean
+ gst_wayland_sink_event (GstBaseSink * bsink, GstEvent * event)
+ {
+@@ -535,6 +562,9 @@ gst_wayland_sink_event (GstBaseSink * bsink, GstEvent * event)
+ 
+   GST_DEBUG_OBJECT (self, "handling %s event", GST_EVENT_TYPE_NAME (event));
+ 
++  /* First execute the parent class event function. */
++  ret = GST_BASE_SINK_CLASS (parent_class)->event (bsink, gst_event_ref (event));
++
+   switch (GST_EVENT_TYPE (event)) {
+     case GST_EVENT_TAG:
+       gst_event_parse_tag (event, &taglist);
+@@ -543,13 +573,17 @@ gst_wayland_sink_event (GstBaseSink * bsink, GstEvent * event)
+         gst_wayland_sink_set_rotate_method (self, method, TRUE);
+       }
+ 
++      break;
++    case GST_EVENT_FLUSH_START:
++      /* Force release any buffers in the wayland composer. */
++      gst_buffer_replace (&self->last_buffer, NULL);
++      gst_wl_display_force_release_buffers (self->display);
+       break;
+     default:
+       break;
+   }
+ 
+-  ret = GST_BASE_SINK_CLASS (parent_class)->event (bsink, event);
+-
++  gst_event_unref (event);
+   return ret;
+ }
+ 
+diff --git a/gst-libs/gst/wayland/gstwlbuffer.c b/gst-libs/gst/wayland/gstwlbuffer.c
+index 988c7b6..16e8678 100644
+--- a/gst-libs/gst/wayland/gstwlbuffer.c
++++ b/gst-libs/gst/wayland/gstwlbuffer.c
+@@ -234,17 +234,6 @@ gst_wl_buffer_force_release_and_unref (GstBuffer * buf, GstWlBuffer * self)
+ {
+   GstWlBufferPrivate *priv = gst_wl_buffer_get_instance_private (self);
+ 
+-  /* Force a buffer release.
+-   * At this point, the GstWlDisplay has killed its event loop,
+-   * so we don't need to worry about buffer_release() being called
+-   * at the same time from the event loop thread */
+-  if (priv->used_by_compositor) {
+-    GST_DEBUG_OBJECT (self, "forcing wl_buffer::release (GstBuffer: %p)",
+-        priv->current_gstbuffer);
+-    priv->used_by_compositor = FALSE;
+-    gst_buffer_unref (priv->current_gstbuffer);
+-  }
+-
+   /* Finalize this GstWlBuffer early.
+    * This method has been called as a result of the display shutting down,
+    * so we need to stop using any wayland resources and disconnect from
+@@ -256,6 +245,18 @@ gst_wl_buffer_force_release_and_unref (GstBuffer * buf, GstWlBuffer * self)
+   wl_buffer_destroy (priv->wlbuffer);
+   priv->wlbuffer = NULL;
+   priv->display = NULL;
++
++  /* Force a buffer release.
++   * At this point, the GstWlDisplay has killed its event loop,
++   * so we don't need to worry about buffer_release() being called
++   * at the same time from the event loop thread */
++  if (priv->used_by_compositor) {
++    GST_DEBUG_OBJECT (self, "forcing wl_buffer::release (GstBuffer: %p)",
++        priv->current_gstbuffer);
++    priv->used_by_compositor = FALSE;
++    gst_buffer_unref (priv->current_gstbuffer);
++  }
++
+   priv->current_gstbuffer = NULL;
+ 
+   /* remove the reference that the caller (GstWlDisplay) owns */
+diff --git a/gst-libs/gst/wayland/gstwldisplay.c b/gst-libs/gst/wayland/gstwldisplay.c
+index 8ae698c..9189ec4 100644
+--- a/gst-libs/gst/wayland/gstwldisplay.c
++++ b/gst-libs/gst/wayland/gstwldisplay.c
+@@ -694,3 +694,19 @@ gst_wl_display_has_own_display (GstWlDisplay * self)
+ 
+   return priv->own_display;
+ }
++
++void
++gst_wl_display_force_release_buffers (GstWlDisplay * self)
++{
++  GstWlDisplayPrivate *priv = gst_wl_display_get_instance_private (self);
++
++  /* to avoid buffers being unregistered from another thread
++   * at the same time, take their ownership */
++  g_mutex_lock (&priv->buffers_mutex);
++  g_hash_table_foreach (priv->buffers, gst_wl_ref_wl_buffer, NULL);
++  g_mutex_unlock (&priv->buffers_mutex);
++
++  g_hash_table_foreach (priv->buffers,
++      (GHFunc) gst_wl_buffer_force_release_and_unref, NULL);
++  g_hash_table_remove_all (priv->buffers);
++}
+\ No newline at end of file
+diff --git a/gst-libs/gst/wayland/gstwldisplay.h b/gst-libs/gst/wayland/gstwldisplay.h
+index 3d29b4e..b682599 100644
+--- a/gst-libs/gst/wayland/gstwldisplay.h
++++ b/gst-libs/gst/wayland/gstwldisplay.h
+@@ -112,4 +112,7 @@ struct wp_single_pixel_buffer_manager_v1 * gst_wl_display_get_single_pixel_buffe
+ GST_WL_API
+ gboolean gst_wl_display_has_own_display (GstWlDisplay * self);
+ 
++GST_WL_API
++void gst_wl_display_force_release_buffers (GstWlDisplay * self);
++
+ G_END_DECLS
+-- 
+2.25.1
+

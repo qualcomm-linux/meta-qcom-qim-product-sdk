@@ -1,0 +1,27 @@
+From d8ec0825496ccaf1904e57b90e3e6dd40b10dd5b Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Fri, 28 Mar 2025 09:44:55 +0000
+Subject: [PATCH] v4l2: Fix segmentation fault
+
+Upstream-Status: Pending
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+---
+ sys/v4l2/gstv4l2object.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index c5eb594..5c45dcd 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -1904,7 +1904,7 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+   } else if (g_str_equal (mimetype, "video/x-h264")) {
+     const gchar *stream_format =
+         gst_structure_get_string (structure, "stream-format");
+-    if (g_str_equal (stream_format, "avc"))
++    if (stream_format && g_str_equal (stream_format, "avc"))
+       fourcc = V4L2_PIX_FMT_H264_NO_SC;
+     else
+       fourcc = V4L2_PIX_FMT_H264;
+-- 
+2.43.0
+

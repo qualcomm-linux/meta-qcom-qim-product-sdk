@@ -74,5 +74,6 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     qcom-gstreamer1.0-plugins-oss-voverlay \
     qcom-gstreamer1.0-plugins-oss-vsplit \
     qcom-gstreamer1.0-plugins-oss-vtransform \
+    qcom-gstreamer1.0-plugins-oss-mlmetaextractor \
    "
 

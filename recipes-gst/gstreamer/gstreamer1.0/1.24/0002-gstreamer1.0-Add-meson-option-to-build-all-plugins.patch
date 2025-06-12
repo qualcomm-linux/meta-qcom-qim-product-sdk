@@ -1,0 +1,117 @@
+From 910bf029b66daaa50269a9e026285d43fe7d01d4 Mon Sep 17 00:00:00 2001
+From: Ishu Raj <quic_iraj@quicinc.com>
+Date: Fri, 28 Mar 2025 18:50:05 +0530
+Subject: [PATCH] gstreamer1.0: Add meson option to build all plugins
+
+- Default value is to build all plugins
+- If reduced set of projects is selected, then only below are built:
+    gst
+    libs/gst/base
+    plugins/elements
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Ishu Raj <quic_iraj@quicinc.com>
+---
+ libs/gst/meson.build | 17 ++++++++++-------
+ meson.build          | 25 +++++++++++++++----------
+ meson_options.txt    |  4 ++++
+ plugins/meson.build  |  6 ++++--
+ 4 files changed, 33 insertions(+), 19 deletions(-)
+
+diff --git a/libs/gst/meson.build b/libs/gst/meson.build
+index 33ecc2c..5fd194b 100644
+--- a/libs/gst/meson.build
++++ b/libs/gst/meson.build
+@@ -1,10 +1,13 @@
+ subdir('base')
+-subdir('controller')
+-subdir('net')
+-subdir('helpers')
+ 
+-if get_option('check').disabled()
+-  gst_check_dep = dependency('', required : false)
+-else
+-  subdir('check')
++if build_all_plugins
++  subdir('controller')
++  subdir('net')
++  subdir('helpers')
++
++  if get_option('check').disabled()
++    gst_check_dep = dependency('', required : false)
++  else
++    subdir('check')
++  endif
+ endif
+diff --git a/meson.build b/meson.build
+index 830a601..a3f357f 100644
+--- a/meson.build
++++ b/meson.build
+@@ -671,23 +671,28 @@ if host_system == 'darwin'
+   pkgconfig_libs = ['-Wl,-rpath,${libdir}']
+ endif
+ 
++build_all_plugins = get_option('build-all-plugins')
+ 
+ gst_libraries = []
++
+ subdir('gst')
+ subdir('libs')
+ subdir('plugins')
+-subdir('tools')
+-subdir('tests')
+-subdir('data')
+-subdir('docs')
+ 
+-# xgettext is optional (on Windows for instance)
+-if find_program('xgettext', required : get_option('nls')).found()
+-  cdata.set('ENABLE_NLS', 1)
+-  subdir('po')
+-endif
++if build_all_plugins
++  subdir('tools')
++  subdir('tests')
++  subdir('data')
++  subdir('docs')
+ 
+-subdir('scripts')
++  # xgettext is optional (on Windows for instance)
++  if find_program('xgettext', required : get_option('nls')).found()
++    cdata.set('ENABLE_NLS', 1)
++    subdir('po')
++  endif
++
++  subdir('scripts')
++endif
+ 
+ # Set release date
+ if gst_version_nano == 0
+diff --git a/meson_options.txt b/meson_options.txt
+index 340fb58..100d101 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -48,3 +48,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build-all-plugins', type : 'boolean', yield : true,
++       description : 'Enable build of all plugins')
+diff --git a/plugins/meson.build b/plugins/meson.build
+index ddb3a6e..a287aed 100644
+--- a/plugins/meson.build
++++ b/plugins/meson.build
+@@ -1,5 +1,7 @@
+ plugins = []
+ subdir('elements')
+-if not get_option('coretracers').disabled()
+-  subdir('tracers')
++if build_all_plugins
++  if not get_option('coretracers').disabled()
++    subdir('tracers')
++  endif
+ endif
+-- 
+2.43.0
+

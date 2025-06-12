@@ -1,0 +1,67 @@
+From 4565eab12a78f4b4b8fd64ac473bd2fc1804b34c Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Fri, 28 Mar 2025 09:00:03 +0000
+Subject: [PATCH] v4l2: Send video alignment in allocation query
+
+- Send video alignment in allocation query, so that upstream plugin can
+  consume this information when allocation query is returned
+- Send GstAllocationParams padding in allocation query
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+---
+ sys/v4l2/gstv4l2object.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index edbc222..f09d932 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -5541,6 +5541,8 @@ gst_v4l2_object_propose_allocation (GstV4l2Object * obj, GstQuery * query)
+   guint size, min, max;
+   GstCaps *caps;
+   gboolean need_pool;
++  GstStructure *params = NULL;
++  GstAllocationParams a_params;
+ 
+   /* Set defaults allocation parameters */
+   size = obj->info.size;
+@@ -5590,10 +5592,34 @@ gst_v4l2_object_propose_allocation (GstV4l2Object * obj, GstQuery * query)
+ 
+   min = MAX (obj->min_buffers, GST_V4L2_MIN_BUFFERS (obj));
+ 
++  /* allocation params */
++  gst_allocation_params_init (&a_params);
++
++  if (V4L2_TYPE_IS_MULTIPLANAR (obj->type)) {
++    struct v4l2_pix_format_mplane *pix_mp = &obj->format.fmt.pix_mp;
++    gint i;
++
++    for (i = 0, size = 0; i < pix_mp->num_planes; i++)
++      size += pix_mp->plane_fmt[i].sizeimage;
++  } else {
++    size = obj->format.fmt.pix.sizeimage;
++  }
++
++  a_params.padding = size - obj->info.size;
++
++  if (a_params.padding) {
++    GST_DEBUG_OBJECT (obj->dbg_obj, "allocation params padding:%" G_GSIZE_FORMAT,
++        a_params.padding);
++    gst_query_add_allocation_param (query, NULL, &a_params);
++  }
++
+   gst_query_add_allocation_pool (query, pool, size, min, max);
+ 
+   /* we also support various metadata */
+-  gst_query_add_allocation_meta (query, GST_VIDEO_META_API_TYPE, NULL);
++  params = gst_structure_new_empty ("video-meta");
++  gst_buffer_pool_config_set_video_alignment (params, &obj->align);
++  gst_query_add_allocation_meta (query, GST_VIDEO_META_API_TYPE, params);
++  gst_structure_free (params);
+ 
+   if (pool)
+     gst_object_unref (pool);
+-- 
+2.43.0
+

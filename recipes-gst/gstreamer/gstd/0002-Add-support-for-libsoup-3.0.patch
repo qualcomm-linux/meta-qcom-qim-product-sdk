@@ -1,0 +1,206 @@
+From d0bf4f5df2d8711c342da640478cdfeb16e532c8 Mon Sep 17 00:00:00 2001
+From: Kemal Rasim Sh <quic_kshakir@quicinc.com>
+Date: Fri, 28 Mar 2025 10:44:02 +0200
+Subject: [PATCH 2/3] Add support for libsoup-3.0
+
+Make the GSTD compile against libsoup-3.0.
+If libsoup-3.0 is not found, will fall back to libsoup-2.4.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Kemal Rasim Sh <quic_kshakir@quicinc.com>
+---
+ libgstd/gstd_http.c | 86 +++++++++++++++++++++++++++++++++++++++++++++
+ meson.build         | 10 ++++--
+ 2 files changed, 94 insertions(+), 2 deletions(-)
+
+diff --git a/libgstd/gstd_http.c b/libgstd/gstd_http.c
+index ef4a20f..8faafcf 100644
+--- a/libgstd/gstd_http.c
++++ b/libgstd/gstd_http.c
+@@ -83,9 +83,14 @@ static GstdReturnCode do_put (SoupServer * server, SoupMessage * msg,
+ static GstdReturnCode do_delete (SoupServer * server, SoupMessage * msg,
+     char *name, char **output, const char *path, GstdSession * session);
+ static void do_request (gpointer data_request, gpointer eval);
++#ifdef GSTD_SOUP3
++static void server_callback (SoupServer * server, SoupServerMessage * s_msg,
++    const char *path, GHashTable * query, gpointer data);
++#else
+ static void server_callback (SoupServer * server, SoupMessage * msg,
+     const char *path, GHashTable * query, SoupClientContext * context,
+     gpointer data);
++#endif
+ 
+ static void
+ gstd_http_class_init (GstdHttpClass * klass)
+@@ -295,6 +300,9 @@ do_request (gpointer data_request, gpointer eval)
+   SoupStatus status = SOUP_STATUS_OK;
+   SoupServer *server = NULL;
+   SoupMessage *msg = NULL;
++#ifdef GSTD_SOUP3
++  SoupServerMessage *s_msg = NULL;
++#endif
+   GstdSession *session = NULL;
+   const char *path = NULL;
+   GHashTable *query = NULL;
+@@ -316,6 +324,19 @@ do_request (gpointer data_request, gpointer eval)
+     description_pipe = g_hash_table_lookup (query, "description");
+   }
+ 
++#ifdef GSTD_SOUP3
++  if (soup_message_get_method(msg) == SOUP_METHOD_GET) {
++    ret = do_get (server, msg, &output, path, session);
++  } else if (soup_message_get_method(msg) == SOUP_METHOD_POST) {
++    ret = do_post (server, msg, name, description_pipe, &output, path, session);
++  } else if (soup_message_get_method(msg) == SOUP_METHOD_PUT) {
++    ret = do_put (server, msg, name, &output, path, session);
++  } else if (soup_message_get_method(msg) == SOUP_METHOD_DELETE) {
++    ret = do_delete (server, msg, name, &output, path, session);
++  } else if (soup_message_get_method(msg) == SOUP_METHOD_OPTIONS) {
++    ret = GSTD_EOK;
++  }
++#else
+   if (msg->method == SOUP_METHOD_GET) {
+     ret = do_get (server, msg, &output, path, session);
+   } else if (msg->method == SOUP_METHOD_POST) {
+@@ -327,6 +348,7 @@ do_request (gpointer data_request, gpointer eval)
+   } else if (msg->method == SOUP_METHOD_OPTIONS) {
+     ret = GSTD_EOK;
+   }
++#endif
+ 
+   description = gstd_return_code_to_string (ret);
+   response =
+@@ -336,15 +358,28 @@ do_request (gpointer data_request, gpointer eval)
+   g_free (output);
+   output = NULL;
+ 
++#ifdef GSTD_SOUP3
++  soup_server_message_set_response (s_msg, "application/json", SOUP_MEMORY_COPY,
++      response, strlen (response));
++#else
+   soup_message_set_response (msg, "application/json", SOUP_MEMORY_COPY,
+       response, strlen (response));
++#endif
+   g_free (response);
+   response = NULL;
+ 
+   status = get_status_code (ret);
++#ifdef GSTD_SOUP3
++  soup_server_message_set_status (s_msg, status, NULL);
++#else
+   soup_message_set_status (msg, status);
++#endif
+   g_mutex_lock (data_request_local->mutex);
++#ifdef GSTD_SOUP3
++  soup_server_message_unpause (s_msg);
++#else
+   soup_server_unpause_message (server, msg);
++#endif
+   g_mutex_unlock (data_request_local->mutex);
+ 
+   if (query != NULL) {
+@@ -356,6 +391,52 @@ do_request (gpointer data_request, gpointer eval)
+   return;
+ }
+ 
++#ifdef GSTD_SOUP3
++static void
++server_callback (SoupServer * server, SoupServerMessage * s_msg,
++    const char *path, GHashTable * query, gpointer data)
++{
++  GstdSession *session = NULL;
++  GstdHttp *self = NULL;
++  GstdHttpRequest *data_request = NULL;
++
++  SoupMessage *msg = NULL;
++
++  g_return_if_fail (server);
++  g_return_if_fail (msg);
++  g_return_if_fail (data);
++
++  self = GSTD_HTTP (data);
++  session = self->session;
++
++  data_request = (GstdHttpRequest *) malloc (sizeof (GstdHttpRequest));
++
++  data_request->msg = msg;
++  data_request->server = server;
++  data_request->session = session;
++  data_request->path = path;
++  if (query) {
++    data_request->query = g_hash_table_ref (query);
++  } else {
++    data_request->query = query;
++  }
++  data_request->mutex = &self->mutex;
++
++  soup_message_headers_append (soup_message_get_response_headers(msg),
++      "Access-Control-Allow-Origin", "*");
++  soup_message_headers_append (soup_message_get_response_headers(msg),
++      "Access-Control-Allow-Headers", "origin,range,content-type");
++  soup_message_headers_append (soup_message_get_response_headers(msg),
++      "Access-Control-Allow-Methods", "PUT, GET, POST, DELETE");
++  g_mutex_lock (&self->mutex);
++  soup_server_message_pause (s_msg);
++  g_mutex_unlock (&self->mutex);
++  if (!g_thread_pool_push (self->pool, (gpointer) data_request, NULL)) {
++    GST_ERROR_OBJECT (self->pool, "Thread pool push failed");
++  }
++
++}
++#else
+ static void
+ server_callback (SoupServer * server, SoupMessage * msg,
+     const char *path, GHashTable * query,
+@@ -399,6 +480,7 @@ server_callback (SoupServer * server, SoupMessage * msg,
+   }
+ 
+ }
++#endif
+ 
+ static GstdReturnCode
+ gstd_http_start (GstdIpc * base, GstdSession * session)
+@@ -420,7 +502,11 @@ gstd_http_start (GstdIpc * base, GstdSession * session)
+   gstd_http_stop (base);
+ 
+   GST_DEBUG_OBJECT (self, "Initializing HTTP server");
++#ifdef GSTD_SOUP3
++  self->server = soup_server_new ("server-header", "Gstd-1.0", NULL);
++#else
+   self->server = soup_server_new (SOUP_SERVER_SERVER_HEADER, "Gstd-1.0", NULL);
++#endif
+   if (!self->server) {
+     goto noconnection;
+   }
+diff --git a/meson.build b/meson.build
+index 078cd55..9ca2678 100644
+--- a/meson.build
++++ b/meson.build
+@@ -27,7 +27,13 @@ json_glib_dep = dependency('json-glib-1.0',      version : '>=0.16.2')
+ libd_dep      = dependency('libdaemon',          version : '>=0.14')
+ jansson_dep   = dependency('jansson',            version : '>=2.7')
+ thread_dep    = dependency('threads')
+-libsoup_dep   = dependency('libsoup-2.4',        version : '>=2.4')
++libsoup_dep   = dependency('libsoup-3.0',        version : '>=3.4.4', required : false)
++if libsoup_dep.found()
++  gst_d_args = ['-DGSTD_SOUP3']
++else
++  libsoup_dep   = dependency('libsoup-2.4',        version : '>=2.4')
++  gst_d_args = ['-DGSTD_SOUP2']
++endif
+ libedit_dep   = dependency('libedit',            version : '>=3.0')
+ 
+ gst_check_required = get_option('enable-tests').enabled()
+@@ -127,7 +133,7 @@ if logstatedir == '${prefix}/var/log/gstd/'
+ endif
+ gstd_log_state_dir = '-DGSTD_LOG_STATE_DIR="@0@"'.format(logstatedir)
+ gst_c_args = ['-DHAVE_CONFIG_H',gstd_log_state_dir,gstd_run_state_dir]
+-gst_d_args = ['-DHAVE_CONFIG_H',gstd_log_state_dir,gstd_run_state_dir]
++gst_d_args += ['-DHAVE_CONFIG_H',gstd_log_state_dir,gstd_run_state_dir]
+ 
+ # Get an object returns describing a compiler
+ cc = meson.get_compiler('c')
+-- 
+2.25.1
+

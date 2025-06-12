@@ -1,0 +1,112 @@
+From e2a95abe4089480fec8862f75fb67529bc414851 Mon Sep 17 00:00:00 2001
+From: Kemal Rasim Sh <quic_kshakir@quicinc.com>
+Date: Fri, 28 Mar 2025 11:04:44 +0200
+Subject: [PATCH 3/3] Update deprecated meson functions
+
+Substitute deprecated meson functions with their successors.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Kemal Rasim Sh <quic_kshakir@quicinc.com>
+---
+ init/meson.build            | 2 +-
+ meson.build                 | 2 +-
+ tests/gstd/meson.build      | 4 ++--
+ tests/libgstc/c/meson.build | 4 ++--
+ tests/libgstd/meson.build   | 4 ++--
+ 5 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/init/meson.build b/init/meson.build
+index ea2a8dd..c39e32c 100644
+--- a/init/meson.build
++++ b/init/meson.build
+@@ -11,7 +11,7 @@ if systemd_enabled and systemd_dep.found()
+    # Find user unit dir
+    systemd_dir = get_option('with-gstd-systemddir')
+    if systemd_dir == 'Systemd default systemduserunitdir'
+-      systemd_dir = systemd_dep.get_pkgconfig_variable( \
++      systemd_dir = systemd_dep.get_variable(pkgconfig: \
+       'systemduserunitdir')
+    endif
+    cdata.set('GSTD_SYSTEMD_DIR', systemd_dir)
+diff --git a/meson.build b/meson.build
+index 9ca2678..b1b90d4 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,6 +1,6 @@
+ project('gstd', 'c',
+   version : '0.15.0',
+-  meson_version : '>= 0.50',
++  meson_version : '>= 0.60',
+   default_options : [
+     'c_std=c11',
+   ]
+diff --git a/tests/gstd/meson.build b/tests/gstd/meson.build
+index c2d064d..8deb66e 100644
+--- a/tests/gstd/meson.build
++++ b/tests/gstd/meson.build
+@@ -14,7 +14,7 @@ test_defines = [
+ plugins_dir = []
+ # Define plugins path
+ if gst_dep.type_name() == 'pkgconfig'
+-   plugins_dir =[gst_dep.get_pkgconfig_variable('pluginsdir')]
++   plugins_dir =[gst_dep.get_variable(pkgconfig: 'pluginsdir')]
+ endif
+ 
+ # Create environment object to  stores information about the environment
+@@ -23,7 +23,7 @@ endif
+ env = environment()
+ env.set('GST_PLUGIN_SYSTEM_PATH_1_0', '')
+ env.set('CK_DEFAULT_TIMEOUT', '120')
+-env.set('GST_PLUGIN_PATH_1_0',  [meson.build_root()] + plugins_dir)
++env.set('GST_PLUGIN_PATH_1_0',  [meson.current_build_dir()] + plugins_dir)
+ 
+ # Build and run tests
+ foreach t : gstd_tests
+diff --git a/tests/libgstc/c/meson.build b/tests/libgstc/c/meson.build
+index ca07cc9..6c14ee2 100644
+--- a/tests/libgstc/c/meson.build
++++ b/tests/libgstc/c/meson.build
+@@ -36,7 +36,7 @@ lib_gstc_client = [
+ plugins_dir = []
+ # Define plugins path
+ if gst_dep.type_name() == 'pkgconfig'
+-   plugins_dir = [gst_dep.get_pkgconfig_variable('pluginsdir')]
++   plugins_dir = [gst_dep.get_variable(pkgconfig: 'pluginsdir')]
+ endif
+ 
+ # Create environment object to  stores information about the environment
+@@ -45,7 +45,7 @@ endif
+ env = environment()
+ env.set('GST_PLUGIN_SYSTEM_PATH_1_0', '')
+ env.set('CK_DEFAULT_TIMEOUT', '120')
+-env.set('GST_PLUGIN_PATH_1_0', [meson.build_root()] + plugins_dir)
++env.set('GST_PLUGIN_PATH_1_0', [meson.current_build_dir()] + plugins_dir)
+ 
+ # Build and run tests
+ foreach t : lib_gstc_tests
+diff --git a/tests/libgstd/meson.build b/tests/libgstd/meson.build
+index e84e8c2..582c20f 100644
+--- a/tests/libgstd/meson.build
++++ b/tests/libgstd/meson.build
+@@ -14,7 +14,7 @@ test_defines = [
+ plugins_dir = []
+ # Define plugins path
+ if gst_dep.type_name() == 'pkgconfig'
+-   plugins_dir =[gst_dep.get_pkgconfig_variable('pluginsdir')]
++   plugins_dir =[gst_dep.get_variable(pkgconfig: 'pluginsdir')]
+ endif
+ 
+ # Create environment object to store information about the environment
+@@ -23,7 +23,7 @@ endif
+ env = environment()
+ env.set('GST_PLUGIN_SYSTEM_PATH_1_0', '')
+ env.set('CK_DEFAULT_TIMEOUT', '120')
+-env.set('GST_PLUGIN_PATH_1_0',  [meson.build_root()] + plugins_dir)
++env.set('GST_PLUGIN_PATH_1_0',  [meson.current_build_dir()] + plugins_dir)
+ 
+ # Build and run tests
+ foreach t : gstd_tests
+-- 
+2.25.1
+

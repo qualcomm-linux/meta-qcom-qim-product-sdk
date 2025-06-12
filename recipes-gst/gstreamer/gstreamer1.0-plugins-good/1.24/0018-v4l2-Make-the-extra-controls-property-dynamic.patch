@@ -1,0 +1,40 @@
+From 653b98d08c447b53d471dedddf5db4bf75f7e5ac Mon Sep 17 00:00:00 2001
+From: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+Date: Mon, 28 Apr 2025 18:20:27 +0530
+Subject: [PATCH] v4l2: Make the extra-controls property dynamic
+
+Upstream-Status: Inappropriate [Qualcomm Specific]
+
+Signed-off-by: Tushar Patra Jamula <quic_tjamula@quicinc.com>
+---
+ sys/v4l2/gstv4l2object.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index f14df75..e70c1c9 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -428,7 +428,9 @@ gst_v4l2_object_install_properties_helper (GObjectClass * gobject_class,
+   g_object_class_install_property (gobject_class, PROP_EXTRA_CONTROLS,
+       g_param_spec_boxed ("extra-controls", "Extra Controls",
+           "Extra v4l2 controls (CIDs) for the device",
+-          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++          GST_TYPE_STRUCTURE,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | GST_PARAM_MUTABLE_PLAYING));
++
+ 
+   /**
+    * GstV4l2Src:pixel-aspect-ratio:
+@@ -493,7 +495,8 @@ gst_v4l2_object_install_m2m_properties_helper (GObjectClass * gobject_class)
+   g_object_class_install_property (gobject_class, PROP_EXTRA_CONTROLS,
+       g_param_spec_boxed ("extra-controls", "Extra Controls",
+           "Extra v4l2 controls (CIDs) for the device",
+-          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++          GST_TYPE_STRUCTURE,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | GST_PARAM_MUTABLE_PLAYING));
+ }
+ 
+ /* Support for 32bit off_t, this wrapper is casting off_t to gint64 */
+-- 
+2.43.0
+

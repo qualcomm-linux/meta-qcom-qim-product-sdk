@@ -20,4 +20,6 @@ SRC_URI:append:qcom-custom-bsp = "\
     file://0013-v4l2-Fix-segmentation-fault.patch \
     file://0014-v4l2-Use-internal-DMA-buffer-pool-even-without-video.patch \
     file://0015-v4l2-fix-runtime-change-between-system-and-DMA-buffe.patch \
+    file://0016-v4l2-Make-the-extra-controls-property-dynamic.patch \
+    file://0017-v4l2-Add-support-for-colorimetry-bt2100-pq-and-1-4-5.patch \
 "
