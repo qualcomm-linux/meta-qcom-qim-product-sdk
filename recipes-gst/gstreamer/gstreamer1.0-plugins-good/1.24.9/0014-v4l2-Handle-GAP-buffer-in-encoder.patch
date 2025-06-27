@@ -1,0 +1,28 @@
+From ddcf9ef3a31c310d879185f897681a9cefbebb25 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <quic_ppachang@quicinc.com>
+Date: Fri, 28 Mar 2025 09:30:39 +0000
+Subject: [PATCH] v4l2: Handle GAP buffer in encoder
+
+Upstream-Status: Pending
+Signed-off-by: Pratik Pachange <quic_ppachang@quicinc.com>
+---
+ sys/v4l2/gstv4l2videoenc.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2videoenc.c b/sys/v4l2/gstv4l2videoenc.c
+index e644ccc..948a29a 100644
+--- a/sys/v4l2/gstv4l2videoenc.c
++++ b/sys/v4l2/gstv4l2videoenc.c
+@@ -811,6 +811,9 @@ gst_v4l2_video_enc_handle_frame (GstVideoEncoder * encoder,
+   if (G_UNLIKELY (!g_atomic_int_get (&self->active)))
+     goto flushing;
+ 
++  if (GST_BUFFER_FLAG_IS_SET (frame->input_buffer, GST_BUFFER_FLAG_GAP))
++    goto drop;
++
+   task_state = gst_pad_get_task_state (GST_VIDEO_ENCODER_SRC_PAD (self));
+   if (task_state == GST_TASK_STOPPED || task_state == GST_TASK_PAUSED) {
+     /* It is possible that the processing thread stopped due to an error or
+-- 
+2.43.0
+

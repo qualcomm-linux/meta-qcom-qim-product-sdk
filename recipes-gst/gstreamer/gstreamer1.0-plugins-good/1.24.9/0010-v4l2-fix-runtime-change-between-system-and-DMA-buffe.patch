@@ -1,0 +1,39 @@
+From 85a1fedbe1e457a850073b8d109785e0759e5c96 Mon Sep 17 00:00:00 2001
+From: Stilyan Uzunov <quic_suzunov@quicinc.com>
+Date: Wed, 26 Mar 2025 18:59:10 +0000
+Subject: [PATCH 2/2] v4l2: fix runtime change between system and DMA buffers
+
+Issue: Ruining V4L2 decoder with downstream needs FD
+buffer some time fails because decoder sometimes sends non-FD buffer.
+
+Analysis: V4L2 buffer pool copy DMA buffer in system memory buffer
+is number of free buffers are bellow some threshold. This feature
+is enable by V4L2 object when downstream does not propose
+buffer pool. But the issues are that decoder is configured to
+work on DMA export mode downstream buffer pool will be not used
+anyway.
+
+Fix: Disable buffer copy if DMA buffers are used.
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Konstantin Motov <quic_kmotov@quicinc.com>
+---
+ sys/v4l2/gstv4l2object.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 69e5eef..8da903a 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -5381,7 +5381,7 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+ 
+     /* If no allocation parameters where provided, allow for a little more
+      * buffers and enable copy threshold */
+-    if (!update) {
++    if (!update && obj->mode != GST_V4L2_IO_DMABUF) {
+       own_min += 2;
+       gst_v4l2_buffer_pool_copy_at_threshold (GST_V4L2_BUFFER_POOL (pool),
+           TRUE);
+-- 
+2.43.0
+

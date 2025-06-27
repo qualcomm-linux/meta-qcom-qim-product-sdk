@@ -1,0 +1,172 @@
+From 9da36476b88ce4703090fba9b2353c168ffbf280 Mon Sep 17 00:00:00 2001
+From: Stilyan Uzunov <quic_suzunov@quicinc.com>
+Date: Thu, 20 Feb 2025 14:04:15 +0000
+Subject: [PATCH] gstreamer1.0-plugins-good: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    ext/pulse
+    sys/v4l2
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Stilyan Uzunov <quic_suzunov@quicinc.com>
+---
+ ext/meson.build   | 56 +++++++++++++++++++++++++----------------------
+ meson.build       | 29 +++++++++++++++---------
+ meson_options.txt |  4 ++++
+ sys/meson.build   | 22 +++++++++++--------
+ 4 files changed, 66 insertions(+), 45 deletions(-)
+
+diff --git a/ext/meson.build b/ext/meson.build
+index 5b0a675..17158b5 100644
+--- a/ext/meson.build
++++ b/ext/meson.build
+@@ -1,26 +1,30 @@
+-subdir('aalib')
+-subdir('adaptivedemux2')
+-subdir('amrnb')
+-subdir('amrwbdec')
+-subdir('cairo')
+-subdir('flac')
+-subdir('gdk_pixbuf')
+-subdir('gtk')
+-subdir('jack')
+-subdir('jpeg')
+-subdir('lame')
+-subdir('libcaca')
+-subdir('dv')
+-subdir('libpng')
+-subdir('mpg123')
+-subdir('raw1394')
+-subdir('qt')
+-subdir('qt6')
+-subdir('pulse')
+-subdir('shout2')
+-subdir('soup')
+-subdir('speex')
+-subdir('taglib')
+-subdir('twolame')
+-subdir('vpx')
+-subdir('wavpack')
++if build_all_plugins
++    subdir('aalib')
++    subdir('adaptivedemux2')
++    subdir('amrnb')
++    subdir('amrwbdec')
++    subdir('cairo')
++    subdir('flac')
++    subdir('gdk_pixbuf')
++    subdir('gtk')
++    subdir('jack')
++    subdir('jpeg')
++    subdir('lame')
++    subdir('libcaca')
++    subdir('dv')
++    subdir('libpng')
++    subdir('mpg123')
++    subdir('raw1394')
++    subdir('qt')
++    subdir('qt6')
++    subdir('pulse')
++    subdir('shout2')
++    subdir('soup')
++    subdir('speex')
++    subdir('taglib')
++    subdir('twolame')
++    subdir('vpx')
++    subdir('wavpack')
++else
++    subdir('pulse')
++endif
+diff --git a/meson.build b/meson.build
+index 20dd3e4..f9c2e7a 100644
+--- a/meson.build
++++ b/meson.build
+@@ -491,11 +491,18 @@ if get_option('default_library') == 'shared'
+   plugins_pkgconfig_install_dir = disabler()
+ endif
+ 
+-subdir('gst')
+-subdir('sys')
+-subdir('ext')
+-subdir('tests')
+-subdir('docs')
++build_all_plugins = get_option('build-all-plugins')
++
++if build_all_plugins
++  subdir('gst')
++  subdir('sys')
++  subdir('ext')
++  subdir('tests')
++  subdir('docs')
++else
++  subdir('ext')
++  subdir('sys')
++endif
+ 
+ if have_orcc and orc_targets.length() > 0
+   update_orc_dist_files = find_program('scripts/update-orc-dist-files.py')
+@@ -520,12 +527,14 @@ if have_orcc and orc_targets.length() > 0
+   endif
+ endif
+ 
+-# xgettext is optional (on Windows for instance)
+-if find_program('xgettext', required : get_option('nls')).found()
+-  subdir('po')
+-endif
++if build_all_plugins
++  # xgettext is optional (on Windows for instance)
++  if find_program('xgettext', required : get_option('nls')).found()
++    subdir('po')
++  endif
+ 
+-subdir('scripts')
++  subdir('scripts')
++endif
+ 
+ # Set release date
+ if gst_version_nano == 0
+diff --git a/meson_options.txt b/meson_options.txt
+index f57883d..99cd923 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -134,3 +134,7 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build-all-plugins', type: 'boolean', value: true,
++       description: 'Enable build of all plugins')
+diff --git a/sys/meson.build b/sys/meson.build
+index d337015..32ee353 100644
+--- a/sys/meson.build
++++ b/sys/meson.build
+@@ -1,9 +1,13 @@
+-subdir('directsound')
+-subdir('oss')
+-subdir('oss4')
+-subdir('osxaudio')
+-subdir('osxvideo')
+-subdir('rpicamsrc')
+-subdir('v4l2')
+-subdir('waveform')
+-subdir('ximage')
++if build_all_plugins
++  subdir('directsound')
++  subdir('oss')
++  subdir('oss4')
++  subdir('osxaudio')
++  subdir('osxvideo')
++  subdir('rpicamsrc')
++  subdir('v4l2')
++  subdir('waveform')
++  subdir('ximage')
++else
++  subdir('v4l2')
++endif
+-- 
+2.43.0
+

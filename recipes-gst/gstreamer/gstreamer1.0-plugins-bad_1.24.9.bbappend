@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend:qcom-custom-bsp := "${THISDIR}/gstreamer1.0-plugins-bad/1.24:"
+FILESEXTRAPATHS:prepend:qcom-custom-bsp := "${THISDIR}/gstreamer1.0-plugins-bad/1.24.9:"
 
 SRC_URI:append:qcom-custom-bsp = "\
   file://0001-gstreamer1.0-plugins-bad-Add-meson-option-to-build-a.patch \

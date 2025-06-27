@@ -17,7 +17,7 @@ DEPENDS:append:qcm6490 = " qcom-camera-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "1a99cb028296252eaf21ac353f6446eaf528cf69"
+SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-webrtc-sendrecv-example"
 S = "${WORKDIR}/gst-webrtc-sendrecv-example"

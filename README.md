@@ -1,24 +1,25 @@
-# Welcome to the Qualcomm Intelligent Multimedia Product SDK (QIMP SDK)
+# Welcome to the Qualcomm Intelligent Multimedia SDK (QIM SDK)
 
 In this documentation, you will learn:
 
-- What is the Qualcomm Intelligent Multimedia Product SDK
-- How to sync and build the Qualcomm Intelligent Multimedia Product SDK
-- How to install and uninstall the Qualcomm Intelligent Multimedia Product SDK
+- What is the Qualcomm Intelligent Multimedia SDK
+- How to sync and build the Qualcomm Intelligent Multimedia SDK
+- How to install and uninstall the Qualcomm Intelligent Multimedia SDK
 
 Let's get started!
 
-# What is the Qualcomm Intelligent Multimedia Product SDK
+# What is the Qualcomm Intelligent Multimedia SDK
 
-The Qualcomm Intelligent Multimedia Product SDK is a Product SDK across Internet of Things (IOT) segments encompassing QIM SDK, TF-lite SDK, SNPE SDK and QNN SDK enabling seamless multimedia and AI/ML application deployment. This SDK utilizes GStreamer, an open-source multimedia framework and exposes easy APIs and plugins in both multimedia and AI/ML domain.
+The Qualcomm® Intelligent Multimedia SDK (IM SDK) provides Qualcomm hardware-accelerated GStreamer-based plugins for optimized application development and includes reference applications that can be used to develop various use cases. Additionally, Qualcomm packages compatible versions of AI SDKs, namely, Qualcomm® Neural Processing SDK, Qualcomm® AI Engine direct SDK, and Lite Runtime or LiteRT (formerly known as TensorFlow Lite).
 
-The Qualcomm Intelligent Multimedia Product SDK provides advanced features as below:
+The Qualcomm Intelligent Multimedia SDK provides advanced features as below:
 
 - APIs and tools for multimedia/AI application development.
+- Sample application .
 - Add your own application recipes based on QIMSDK for multimedia development and use AI acceleration using TFLITE-SDK/QNN/SNPE SDKs.
 - Standalone compilation based on Yocto Project.
 
-The Qualcomm Intelligent Multimedia Product SDK consist of :
+The Qualcomm Intelligent Multimedia SDK consist of :
 
 - recipes: has recipes to build individual qimsdk/tflite/qnn/snpe packages
 - packagegroups: has qimsdk/tflite/qnn/snpe packagegroups
@@ -26,7 +27,7 @@ The Qualcomm Intelligent Multimedia Product SDK consist of :
 - conf: has layer.conf with qimsdk/tflite/qnn/snpe layer specific configurations
 
 
-# How to sync and build the Qualcomm Intelligent Multimedia Product SDK
+# How to sync and build the Qualcomm Intelligent Multimedia SDK
 
 ## Host Setup and Download the Yocto Project BSP
 
@@ -41,10 +42,10 @@ repo sync
 
 ## Examples
 
-To download the `qcom-6.6.90-QLI.1.5-Ver.1.0` release
+To download the `qcom-6.6.90-QLI.1.5-Ver.1.1` release
 
 ```shell
-repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.90-QLI.1.5-Ver.1.0.xml
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.90-QLI.1.5-Ver.1.1.xml
 repo sync
 ```
 
@@ -58,12 +59,12 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.90-QLI.1.5-Ver.1.0_qim-product-sdk-2.0.0` release tag
+To download the `qcom-6.6.90-QLI.1.5-Ver.1.1_qim-product-sdk-2.0.1` release tag
 ```shell
-git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.90-QLI.1.5-Ver.1.0_qim-product-sdk-2.0.0 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.90-QLI.1.5-Ver.1.1_qim-product-sdk-2.0.1 layers/meta-qcom-qim-product-sdk
 ```
 
-## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia Product SDK
+## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia SDK
 
 ```shell
 export SHELL=/bin/bash
@@ -77,7 +78,7 @@ bitbake qcom-multimedia-image
 ```
 Image output path: $[release]/build-qcom-wayland/tmp-glibc/deploy/images/qcm6490/qcom-multimedia-image.
 
-## To generate QIM Product SDK artifacts
+## To generate QIM SDK artifacts
 
 ```shell
 bitbake qcom-qim-product-sdk
@@ -106,7 +107,7 @@ Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/q
 
 # Reference
 
-[Standard Yocto environment](https://docs.yoctoproject.org/5.0.6/singleindex.html#welcome-to-the-yocto-project-documentation)
+[Standard Yocto environment](https://docs.yoctoproject.org/5.0.9/singleindex.html#welcome-to-the-yocto-project-documentation)
 
 [QCOM Linux Yocto BSP releases](https://github.com/qualcomm-linux/qcom-manifest/blob/qcom-linux-scarthgap/README.md)
 

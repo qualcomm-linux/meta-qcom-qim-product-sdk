@@ -15,7 +15,7 @@ DEPENDS += "qcom-ib2c"
 DEPENDS += "json-glib"
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "1a99cb028296252eaf21ac353f6446eaf528cf69"
+SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-base"
 S = "${WORKDIR}/gst-plugin-base"
@@ -33,8 +33,6 @@ EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_INCDIR=${INSTALL_INCDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
 
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_VERSION=${PV}"
-
 PACKAGECONFIG = "${@bb.utils.contains('PREFERRED_PROVIDER_virtual/libgbm', 'gbm', 'gbm', '', d)} "
 PACKAGECONFIG[gbm] = " , ,gbm,gbm"
 
@@ -43,3 +41,5 @@ FILES:${PN} += "${INSTALL_LIBDIR}"
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""
+
+INSANE_SKIP:${PN} = "dev-so"

@@ -1,0 +1,58 @@
+From a978ec07990bfef88126010efb32bc7e1ec29894 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <ppachang@qti.qualcomm.com>
+Date: Mon, 5 May 2025 06:38:13 +0000
+Subject: [PATCH 01/16] v4l2: Add support for V4L2_PIX_FMT_QC08C format
+
+V4L2_PIX_FMT_QC08C is defined as equivalent to
+GST_VIDEO_FORMAT_NV12_Q08C gstreamer format
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2object.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index ff305f5..534b559 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -165,6 +165,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
+   {V4L2_PIX_FMT_NV24, TRUE, GST_V4L2_RAW},
+   {V4L2_PIX_FMT_NV42, TRUE, GST_V4L2_RAW},
+   {V4L2_PIX_FMT_MM21, TRUE, GST_V4L2_RAW},
++  {V4L2_PIX_FMT_QC08C, TRUE, GST_V4L2_RAW},
+ 
+   /* Bayer formats - see http://www.siliconimaging.com/RGB%20Bayer.htm */
+   {V4L2_PIX_FMT_SBGGR8, TRUE, GST_V4L2_RAW},
+@@ -1463,6 +1464,9 @@ gst_v4l2_object_v4l2fourcc_to_video_format (guint32 fourcc)
+     case V4L2_PIX_FMT_NV24:
+       format = GST_VIDEO_FORMAT_NV24;
+       break;
++    case V4L2_PIX_FMT_QC08C:
++      format = GST_VIDEO_FORMAT_NV12_Q08C;
++      break;
+     default:
+       format = GST_VIDEO_FORMAT_UNKNOWN;
+       break;
+@@ -1616,6 +1620,7 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
+     case V4L2_PIX_FMT_NV61:    /* 16  Y/CrCb 4:2:2  */
+     case V4L2_PIX_FMT_NV61M:
+     case V4L2_PIX_FMT_NV24:    /* 24  Y/CrCb 4:4:4  */
++    case V4L2_PIX_FMT_QC08C:
+     case V4L2_PIX_FMT_YVU410:
+     case V4L2_PIX_FMT_YUV410:
+     case V4L2_PIX_FMT_YUV420:  /* I420/IYUV */
+@@ -1985,6 +1990,9 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+       case GST_VIDEO_FORMAT_NV24:
+         fourcc = V4L2_PIX_FMT_NV24;
+         break;
++      case GST_VIDEO_FORMAT_NV12_Q08C:
++        fourcc = V4L2_PIX_FMT_QC08C;
++        break;
+       case GST_VIDEO_FORMAT_YVYU:
+         fourcc = V4L2_PIX_FMT_YVYU;
+         break;
+-- 
+2.25.1
+
