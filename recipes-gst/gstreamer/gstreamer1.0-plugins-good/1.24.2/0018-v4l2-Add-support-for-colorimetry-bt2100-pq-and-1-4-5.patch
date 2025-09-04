@@ -1,59 +1,142 @@
-From 0c399fc66f68f419f1ce16f1b786723698f2bfbe Mon Sep 17 00:00:00 2001
+From c5b82396ac488505b729d6e76bf688d9c11a1e3f Mon Sep 17 00:00:00 2001
 From: Pratik Pachange <ppachang@qti.qualcomm.com>
 Date: Wed, 30 Apr 2025 12:12:35 +0530
-Subject: [PATCH] v4l2: Add support for colorimetry bt2100-pq and 1:4:5:3
+Subject: [PATCH] v4l2: Add support for colorimetry bt2100-pq, 1:4:5:3,
+ 1:4:16:3
 
 - Colorimetry bt2100-pq is a variant of colorspace
   V4L2_COLORSPACE_BT2020
 - Colorimetry 1:4:5:3 is a full-range variant of colorspace
   V4L2_COLORSPACE_470_SYSTEM_BG
+- Colorimetry 1:4:16:3, also known as SMPTE170M / ITU-R BT1358 525
+  or 625 / ITU-R BT1700 NTSC
 
 Upstream-Status: Pending
 
 Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
 ---
- sys/v4l2/gstv4l2object.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ sys/v4l2/gstv4l2object.c | 103 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 90 insertions(+), 13 deletions(-)
 
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index e70c1c9..39492d8 100644
+index bb0f11f..2066bde 100644
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
-@@ -2488,6 +2488,34 @@ gst_v4l2_object_add_colorspace (GstV4l2Object * v4l2object, GstStructure * s,
-           struct v4l2_format alt_fmt;
-           memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
+@@ -2643,24 +2643,101 @@ gst_v4l2_object_add_colorspace (GstV4l2Object * v4l2object, GstStructure * s,
+       else
+         colorspace = fmt.fmt.pix.colorspace;
  
-+          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
-+            alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
-+          else
-+            alt_fmt.fmt.pix.quantization = V4L2_QUANTIZATION_FULL_RANGE;
+-      if (colorspace == req_cspace) {
+-        if (gst_v4l2_object_get_colorspace (v4l2object, &fmt, &cinfo))
+-          gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
+-        if (colorspace == V4L2_COLORSPACE_REC709) {
+-          /* support for full-range variants of colorspaces V4L2_COLORSPACE_REC709
+-           * (such as Apple's full-range bt709 variant 1:3:5:1) */
+-          struct v4l2_format alt_fmt;
+-          memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
+-
+-          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
+-            alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
+-          else
+-            alt_fmt.fmt.pix.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++      if (colorspace != req_cspace)
++        continue;
++
++      if (gst_v4l2_object_get_colorspace (v4l2object, &fmt, &cinfo))
++        gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
++      if (colorspace == V4L2_COLORSPACE_REC709 ||
++          colorspace == V4L2_COLORSPACE_470_SYSTEM_BG) {
++        /* support for full-range variants of colorspaces V4L2_COLORSPACE_REC709
++         * (such as Apple's full-range bt709 variant 1:3:5:1) and colorspace
++         * V4L2_COLORSPACE_470_SYSTEM_BG */
++        struct v4l2_format alt_fmt;
++        enum v4l2_quantization quantization;
++        memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
++
++        if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
++          alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++        else
++          alt_fmt.fmt.pix.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++
++        if (gst_v4l2_object_try_fmt (v4l2object, &alt_fmt) == 0) {
++          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type)) {
++            colorspace = alt_fmt.fmt.pix_mp.colorspace;
++            quantization = alt_fmt.fmt.pix_mp.quantization;
++          } else {
++            colorspace = alt_fmt.fmt.pix.colorspace;
++            quantization = alt_fmt.fmt.pix.quantization;
++          }
++
++          if (colorspace != req_cspace
++              || quantization != V4L2_QUANTIZATION_FULL_RANGE)
++            continue;
+ 
+           if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo))
+             gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
+         }
+       }
++      if (colorspace == V4L2_COLORSPACE_BT2020) {
++        /* support for colorimetry bt2100-pq, variant of colorspace
++         * V4L2_COLORSPACE_BT2020 */
++        struct v4l2_format alt_fmt;
++        enum v4l2_xfer_func xfer_func;
++        memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
++
++        if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
++          alt_fmt.fmt.pix_mp.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
++        else
++          alt_fmt.fmt.pix.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
++
++        if (gst_v4l2_object_try_fmt (v4l2object, &alt_fmt) == 0) {
++          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type)) {
++            colorspace = alt_fmt.fmt.pix_mp.colorspace;
++            xfer_func = alt_fmt.fmt.pix_mp.xfer_func;
++          } else {
++            colorspace = alt_fmt.fmt.pix.colorspace;
++            xfer_func = alt_fmt.fmt.pix.xfer_func;
++          }
++
++          if (colorspace != req_cspace || xfer_func != V4L2_XFER_FUNC_SMPTE2084)
++            continue;
 +
 +          if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo))
 +            gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
 +        }
-+        if (colorspace == V4L2_COLORSPACE_BT2020) {
-+          /* support for colorimetry bt2100-pq, variant of colorspace
-+           * V4L2_COLORSPACE_BT2020 */
-+          struct v4l2_format alt_fmt;
-+          memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
++      }
++      if (colorspace == V4L2_COLORSPACE_SMPTE170M) {
++        /* support for colorimetry 1:4:16:3, also known as
++         * SMPTE170M / ITU-R BT1358 525 or 625 / ITU-R BT1700 NTSC */
++        struct v4l2_format alt_fmt;
++        enum v4l2_quantization quantization;
++        memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
 +
-+          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
-+            alt_fmt.fmt.pix_mp.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
-+          else
-+            alt_fmt.fmt.pix.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
++        if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
++          alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++        else
++          alt_fmt.fmt.pix.quantization = V4L2_QUANTIZATION_FULL_RANGE;
 +
-+          if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo))
++        if (gst_v4l2_object_try_fmt (v4l2object, &alt_fmt) == 0) {
++          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type)) {
++            colorspace = alt_fmt.fmt.pix_mp.colorspace;
++            quantization = alt_fmt.fmt.pix_mp.quantization;
++          } else {
++            colorspace = alt_fmt.fmt.pix.colorspace;
++            quantization = alt_fmt.fmt.pix.quantization;
++          }
++
++          if (colorspace != req_cspace
++              || quantization != V4L2_QUANTIZATION_FULL_RANGE)
++            continue;
++
++          if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo)) {
++            cinfo.primaries = GST_VIDEO_COLOR_PRIMARIES_BT470BG;
 +            gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
++          }
 +        }
-+        if (colorspace == V4L2_COLORSPACE_470_SYSTEM_BG) {
-+          /* support for full-range variants of colorspaces
-+           * V4L2_COLORSPACE_470_SYSTEM_BG */
-+          struct v4l2_format alt_fmt;
-+          memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
-+
-           if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
-             alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
-           else
++      }
+     }
+   }
+ 
 -- 
-2.34.1
+2.43.0
 

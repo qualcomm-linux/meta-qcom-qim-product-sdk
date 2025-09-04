@@ -9,13 +9,14 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 # Dependencies.
 DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
-DEPENDS += "qcom-adreno"
 DEPENDS += "qcom-fastcv-binaries"
-DEPENDS += "qcom-ib2c"
+DEPENDS += "virtual/kernel"
+DEPENDS += "virtual/egl"
+DEPENDS += "virtual/libgles2"
 DEPENDS += "json-glib"
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
+SRCREV     = "4d3e15b3ce316a18c49e9383a11ccdb16cd1238e"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-base"
 S = "${WORKDIR}/gst-plugin-base"

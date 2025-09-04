@@ -14,7 +14,7 @@ DEPENDS += "cairo"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
+SRCREV     = "4d3e15b3ce316a18c49e9383a11ccdb16cd1238e"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-mlvclassification"
 S = "${WORKDIR}/gst-plugin-mlvclassification"
@@ -46,3 +46,8 @@ FILES:${PN}-dbg += "${INSTALL_LIBDIR}/gstreamer-1.0/ml/modules/.debug"
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""
+
+python do_package:prepend() {
+    bb.warn("This mlvclassification plugin will be deprecated in the future! "
+        "Use qtimlpostprocess instead.")
+}

@@ -1,0 +1,32 @@
+From a795c9bc6a7e5da0af11140702c68037bc1eb698 Mon Sep 17 00:00:00 2001
+From: Nicolas Dufresne <nicolas.dufresne@collabora.com>
+Date: Tue, 22 Aug 2023 14:54:36 -0400
+Subject: [PATCH] waylandsink: Restore support for render-rectangle
+
+Fixes #2519
+
+Part-of:
+<https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/5221>
+
+Upstream-Status: Backport [from version 1.24]
+---
+ ext/wayland/gstwaylandsink.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/wayland/gstwaylandsink.c b/ext/wayland/gstwaylandsink.c
+index 016ccf0..f7af22f 100644
+--- a/ext/wayland/gstwaylandsink.c
++++ b/ext/wayland/gstwaylandsink.c
+@@ -296,7 +296,8 @@ gst_wayland_sink_set_property (GObject * object,
+           FALSE);
+       break;
+     default:
+-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      if (!gst_video_overlay_set_property (object, PROP_LAST, prop_id, value))
++        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+   }
+ }
+-- 
+2.34.1
+

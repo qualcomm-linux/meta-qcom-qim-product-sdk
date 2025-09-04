@@ -109,8 +109,8 @@ diff --git a/gst-libs/gst/video/video-info.c b/gst-libs/gst/video/video-info.c
 index 3659aba..b607851 100644
 --- a/gst-libs/gst/video/video-info.c
 +++ b/gst-libs/gst/video/video-info.c
-@@ -1364,6 +1364,40 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
-       }
+@@ -1354,6 +1354,40 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
+       info->size = info->offset[1] + uv_plane_size + uv_meta_size;
        break;
      }
 +    case GST_VIDEO_FORMAT_NV12_Q10LE32C:

@@ -12,15 +12,15 @@ DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "qcom-gstreamer1.0-plugins-oss-mlmeta"
 DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
-DEPENDS += "qcom-adreno"
 DEPENDS += "cairo"
 DEPENDS += "property-vault syslog-plumber"
+DEPENDS += "${@'adrenocl' if d.getVar('GL_PROVIDER') == 'qcom-adreno' else 'opencl-headers'}"
 
 RDEPENDS:${PN}:append = " property-vault"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
+SRCREV     = "4d3e15b3ce316a18c49e9383a11ccdb16cd1238e"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-overlay"
 S = "${WORKDIR}/gst-plugin-overlay"

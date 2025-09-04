@@ -1,4 +1,4 @@
-inherit cmake
+inherit cmake pkgconfig
 
 SUMMARY = "Tensorflow Lite"
 DESCRIPTION = "TensorFlow Lite C++ Library"

@@ -15,7 +15,7 @@ DEPENDS += "qcom-rvsdk"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "bf43208eaa24d1b1ed6a463b13f25dc75470893d"
+SRCREV     = "4d3e15b3ce316a18c49e9383a11ccdb16cd1238e"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-dfs"
 S = "${WORKDIR}/gst-plugin-dfs"

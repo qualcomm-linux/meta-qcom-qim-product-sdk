@@ -1,4 +1,4 @@
-From 3bc5d340db35d7bb07a176ccb86187685140c7cb Mon Sep 17 00:00:00 2001
+From 758071846dd2bce0e7805078d52336734de46294 Mon Sep 17 00:00:00 2001
 From: Hui Liu <quic_huliu@quicinc.com>
 Date: Tue, 18 Mar 2025 11:04:21 +0800
 Subject: [PATCH] video: Add support for NV12_Q10LE32C (compressed 10-bit)
@@ -8,9 +8,9 @@ Upstream-Status: Inappropriate [Qualcomm specific]
 
 Signed-off-by: Hui Liu <quic_huliu@quicinc.com>
 ---
- .../gst-libs/gst/video/video-format.c         | 22 ++++++++++++
- .../gst-libs/gst/video/video-format.h         | 12 +++++--
- .../gst-libs/gst/video/video-info.c           | 34 +++++++++++++++++++
+ gst-libs/gst/video/video-format.c         | 22 ++++++++++++
+ gst-libs/gst/video/video-format.h         | 12 +++++--
+ gst-libs/gst/video/video-info.c           | 34 +++++++++++++++++++
  3 files changed, 66 insertions(+), 2 deletions(-)
 
 diff --git a/gst-libs/gst/video/video-format.c b/gst-libs/gst/video/video-format.c
@@ -105,11 +105,11 @@ index 9a50b3f2e2..e808750ba7 100644
 
  GST_VIDEO_API
 diff --git a/gst-libs/gst/video/video-info.c b/gst-libs/gst/video/video-info.c
-index a063c1cf74..6ffbcfe901 100644
+index d11e4aa63f..378426b3f1 100644
 --- a/gst-libs/gst/video/video-info.c
 +++ b/gst-libs/gst/video/video-info.c
-@@ -1304,6 +1304,40 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
-       }
+@@ -1298,6 +1298,40 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
+       info->size = info->offset[1] + uv_plane_size + uv_meta_size;
        break;
      }
 +    case GST_VIDEO_FORMAT_NV12_Q10LE32C:
@@ -149,3 +149,5 @@ index a063c1cf74..6ffbcfe901 100644
      case GST_VIDEO_FORMAT_ENCODED:
        break;
      case GST_VIDEO_FORMAT_UNKNOWN:
+--
+2.25.1

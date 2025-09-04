@@ -1,0 +1,29 @@
+From e41a24e4928bd33f278be838485a30725bbbfdc0 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <ppachang@qti.qualcomm.com>
+Date: Tue, 5 Aug 2025 05:43:21 +0000
+Subject: [PATCH] v4l2: Enable copy at threshold for encoder output
+
+Upstream-Status: Pending
+
+Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2object.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 2066bde..ec9f2a9 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -5570,7 +5570,8 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+ 
+     /* If no allocation parameters where provided, allow for a little more
+      * buffers and enable copy threshold */
+-    if (!update && obj->mode != GST_V4L2_IO_DMABUF) {
++    if (!update && (obj->mode != GST_V4L2_IO_DMABUF ||
++        GST_VIDEO_INFO_FORMAT(&obj->info) == GST_VIDEO_FORMAT_ENCODED)) {
+       own_min += 2;
+       gst_v4l2_buffer_pool_copy_at_threshold (GST_V4L2_BUFFER_POOL (pool),
+           TRUE);
+-- 
+2.43.0
+

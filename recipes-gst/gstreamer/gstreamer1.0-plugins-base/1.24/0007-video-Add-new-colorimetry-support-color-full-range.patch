@@ -1,0 +1,44 @@
+From c5b1780a92bba9ac46132808fd441d69fa9d02bf Mon Sep 17 00:00:00 2001
+From: Guangde <guangde@qti.qualcomm.com>
+Date: Tue, 10 Jun 2025 11:14:09 +0800
+Subject: [PATCH] video: Add new colorimetry support color full range
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Guangde <guangde@qti.qualcomm.com>
+---
+ gst-libs/gst/video/video-color.c | 3 +++
+ gst-libs/gst/video/video-color.h | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/gst-libs/gst/video/video-color.c b/gst-libs/gst/video/video-color.c
+index 90fa380..a7fb233 100644
+--- a/gst-libs/gst/video/video-color.c
++++ b/gst-libs/gst/video/video-color.c
+@@ -72,6 +72,9 @@ static const ColorimetryInfo colorimetry[] = {
+   MAKE_COLORIMETRY (BT2020_10, _16_235, BT2020, BT2020_10, BT2020),
+   MAKE_COLORIMETRY (BT2100_PQ, _16_235, BT2020, SMPTE2084, BT2020),
+   MAKE_COLORIMETRY (BT2100_HLG, _16_235, BT2020, ARIB_STD_B67, BT2020),
++  MAKE_COLORIMETRY (BT601_FULL, _0_255, BT601, BT601, SMPTE170M),
++  MAKE_COLORIMETRY (BT709_FULL, _0_255, BT709, BT709, BT709),
++  MAKE_COLORIMETRY (BT2100_HLG_FULL, _0_255, BT2020, ARIB_STD_B67, BT2020),
+   MAKE_COLORIMETRY (NONAME, _0_255, BT601, UNKNOWN, UNKNOWN),
+   MAKE_COLORIMETRY (NONAME, _UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN),       /* Keep last! */
+ };
+diff --git a/gst-libs/gst/video/video-color.h b/gst-libs/gst/video/video-color.h
+index ccdf64c..f3346c5 100644
+--- a/gst-libs/gst/video/video-color.h
++++ b/gst-libs/gst/video/video-color.h
+@@ -253,6 +253,9 @@ typedef struct {
+ #define GST_VIDEO_COLORIMETRY_BT2020_10   "bt2020-10"
+ #define GST_VIDEO_COLORIMETRY_BT2100_PQ   "bt2100-pq"
+ #define GST_VIDEO_COLORIMETRY_BT2100_HLG  "bt2100-hlg"
++#define GST_VIDEO_COLORIMETRY_BT601_FULL  "bt601-full"
++#define GST_VIDEO_COLORIMETRY_BT709_FULL  "bt709-full"
++#define GST_VIDEO_COLORIMETRY_BT2100_HLG_FULL  "bt2100-hlg-full"
+ 
+ GST_VIDEO_API
+ gboolean     gst_video_colorimetry_matches     (const GstVideoColorimetry *cinfo, const gchar *color);
+-- 
+2.34.1
+
