@@ -58,6 +58,7 @@ RDEPENDS:${PN}:qcom-custom-bsp = " \
     qcom-gst-jpg-decode-example \
     qcom-gst-camera-fd-stream-example \
     qcom-gst-ai-event-encoder \
+    qcom-gst-rtmp-stream-example \
    "
 
 RDEPENDS:${PN}:remove:qcs9100 = " \

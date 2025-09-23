@@ -17,7 +17,7 @@ DEPENDS += "qcom-camera-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "4d3e15b3ce316a18c49e9383a11ccdb16cd1238e"
+SRCREV     = "c7b1665eb6276bbc1f4d3cd6380fb39a85d13fe8"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-camera-metadata-example"
 S = "${WORKDIR}/gst-camera-metadata-example"

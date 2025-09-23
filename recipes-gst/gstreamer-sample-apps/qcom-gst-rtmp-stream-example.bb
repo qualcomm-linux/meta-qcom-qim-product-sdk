@@ -10,6 +10,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6
 DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "gstreamer1.0-plugins-bad"
+DEPENDS += "json-glib"
 DEPENDS += "qcom-gst-sample-apps-utils"
 DEPENDS += "qcom-camera-server"
 
@@ -17,9 +18,8 @@ SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gs
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
 SRCREV     = "c7b1665eb6276bbc1f4d3cd6380fb39a85d13fe8"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-camera-fd-stream-example"
-S = "${WORKDIR}/gst-camera-fd-stream-example"
-
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-rtmp-stream-example"
+S = "${WORKDIR}/gst-rtmp-stream-example"
 
 # Install directries.
 INSTALL_BINDIR := "${bindir}"

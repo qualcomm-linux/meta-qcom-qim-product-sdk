@@ -8,6 +8,22 @@ SDK_NAME="QIM_PRODUCT_SDK"
 FOUND_PKGS=""
 PKG_LIST_FILE="/opt/qcom/qimpsdk/${SDK_NAME}.list"
 
+# Defaults (can be overridden via flag or env)
+INCLUDE_DBG=${INCLUDE_DBG:-false}
+
+# usage/help
+usage() {
+    cat <<EOF
+Usage: $0 [--include-dbg] [-h|--help]
+
+Options:
+  --include-dbg   Include *-dbg_*.ipk packages in installation (default excludes them).
+  -h, --help      Show this help and exit.
+
+Environment:
+  INCLUDE_DBG=true|false   Same as passing/not passing --include-dbg (flag overrides).
+EOF
+}
 
 # check permission for execute this script
 function check_permission() {
@@ -19,11 +35,16 @@ function check_permission() {
 
 # scan packages in current path
 function scan_qim_prod_packages() {
-    FOUND_PKGS=`find . -name "*.ipk" \
-        | grep -v "\-dbg_" \
-        | grep -v "\-dev_" \
-        | grep -v "\-staticdev_" \
-        | tr '\n' ' '`
+    local exclude_patterns="-dev_ -doc_ -locale- -src_ -staticdev_"
+    if [ "$INCLUDE_DBG" != true ]; then
+        exclude_patterns="$exclude_patterns -dbg_"
+    fi
+
+    FOUND_PKGS=$(
+        find . -name "*.ipk" \
+        | grep -vE -- "$(echo "$exclude_patterns" | sed 's/ /|/g')" \
+        | tr '\n' ' '
+    )
 }
 
 # install packages and save list to file
@@ -51,6 +72,14 @@ function main() {
     echo
 
     check_permission
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --include-dbg) INCLUDE_DBG=true; shift ;;
+            -h|--help) usage; exit 0 ;;
+            *) echo "ERROR: Unknown option: $1"; usage; exit 2 ;;
+        esac
+    done
 
     if [ -f ${PKG_LIST_FILE} ]; then
         printf "WARN: ${SDK_NAME} has installed, "

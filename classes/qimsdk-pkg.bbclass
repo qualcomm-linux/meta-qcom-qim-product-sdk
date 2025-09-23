@@ -113,6 +113,7 @@ GST_SAMPLE_APPS = " \
     qcom-gst-ai-metadata-parser-example:do_package_write_ipk \
     qcom-gst-jpg-decode-example:do_package_write_ipk \
     qcom-gst-ai-event-encoder:do_package_write_ipk \
+    qcom-gst-rtmp-stream-example:do_package_write_ipk \
   "
 
 GST_SAMPLE_APPS:remove:qcs9100 = " \
@@ -165,6 +166,8 @@ do_generate_qim_sdk[depends] = " \
     gobject-introspection:do_package_write_ipk \
     python3-pycairo:do_package_write_ipk \
     python3-pygobject:do_package_write_ipk \
+    python3-pip:do_package_write_ipk \
+    git:do_package_write_ipk \
     ${GST_PLUGINS} \
     ${GST_SAMPLE_APPS} \
   "
@@ -224,9 +227,9 @@ def get_pkgs_list(d):
                 "libpsl5", "librsvg-2-2", "libsoup-2.4_",
                 "libtheora_", "libwebp_", "mpg123_",
                 "liborc-0", "libsbc1", "libspeex1", "libtag1", "libjson-glib-1.0-0",
-                "libmosquitto1", "libhiredis", "libnice_", "libsrtp2-1_",
+                "libmosquitto1", "hiredis_", "libnice_", "libsrtp2-1_",
                 "libsrt1.4_", "qcom-rvsdk_1.0", "gobject-introspection_",
-                "python3-pycairo_", "python3-pygobject_"]
+                "python3-pycairo_", "python3-pygobject_", "python3-pip_", "git_"]
     for _, pkgdirs, _ in os.walk(os.path.join(deploydir, pkgtype)):
         for pkgdir in pkgdirs:
             for f in os.listdir(os.path.join(deploydir, pkgtype, pkgdir)):

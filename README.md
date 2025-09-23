@@ -42,10 +42,10 @@ repo sync
 
 ## Examples
 
-To download the `qcom-6.6.97-QLI.1.6-Ver.1.0` release
+To download the `qcom-6.6.97-QLI.1.6-Ver.1.1` release
 
 ```shell
-repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.97-QLI.1.6-Ver.1.0.xml
+repo init -u https://github.com/qualcomm-linux/qcom-manifest -b qcom-linux-scarthgap -m qcom-6.6.97-QLI.1.6-Ver.1.1.xml
 repo sync
 ```
 
@@ -59,9 +59,9 @@ Note: Find the latest meta-qcom-qim-product-sdk release tag names at https://git
 
 ## Examples
 
-To download the `qcom-6.6.97-QLI.1.6-Ver.1.0_qim-product-sdk-2.1.0` release tag
+To download the `qcom-6.6.97-QLI.1.6-Ver.1.1_qim-product-sdk-2.1.1` release tag
 ```shell
-git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.97-QLI.1.6-Ver.1.0_qim-product-sdk-2.1.0 layers/meta-qcom-qim-product-sdk
+git clone https://github.com/qualcomm-linux/meta-qcom-qim-product-sdk -b qcom-6.6.97-QLI.1.6-Ver.1.1_qim-product-sdk-2.1.1 layers/meta-qcom-qim-product-sdk
 ```
 
 ## Build Yocto Project BSP plus Qualcomm Intelligent Multimedia SDK
@@ -107,7 +107,7 @@ Extensible SDK output path : [release]/build-qcom-wayland/tmp-glibc/deploy/sdk/q
 
 # Reference
 
-[Standard Yocto environment](https://docs.yoctoproject.org/5.0.9/singleindex.html#welcome-to-the-yocto-project-documentation)
+[Standard Yocto environment](https://docs.yoctoproject.org/5.0.11/singleindex.html#welcome-to-the-yocto-project-documentation)
 
 [QCOM Linux Yocto BSP releases](https://github.com/qualcomm-linux/qcom-manifest/blob/qcom-linux-scarthgap/README.md)
 
