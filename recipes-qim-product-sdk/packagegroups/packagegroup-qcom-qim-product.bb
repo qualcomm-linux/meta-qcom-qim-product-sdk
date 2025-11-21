@@ -7,8 +7,6 @@ PACKAGE_ARCH = "${SOC_ARCH}"
 
 inherit packagegroup
 
-SRC_URI += "file://install.sh"
-
 PACKAGES = "${PN}"
 
 RDEPENDS:${PN}:qcom-custom-bsp = " \
