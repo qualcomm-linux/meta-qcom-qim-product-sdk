@@ -9,7 +9,7 @@ inherit packagegroup
 
 PACKAGES = "${PN}"
 
-RDEPENDS:${PN}:qcom-custom-bsp = " \
+RDEPENDS:${PN}:qcom = " \
     qcom-gst-sample-apps-utils \
     qcom-gst-activate-deactivate-streams-runtime \
     qcom-gst-add-remove-streams-runtime \

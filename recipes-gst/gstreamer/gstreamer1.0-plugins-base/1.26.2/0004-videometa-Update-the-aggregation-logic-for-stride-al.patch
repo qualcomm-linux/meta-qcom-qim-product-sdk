@@ -1,0 +1,114 @@
+From 6adc1773271da704afe55102865f9893059153c7 Mon Sep 17 00:00:00 2001
+From: Raja Ganapathi Busam <rbusam@qti.qualcomm.com>
+Date: Thu, 13 Mar 2025 22:11:35 +0530
+Subject: [PATCH] videometa: Update the aggregation logic for stride align
+
+- Stride aligns can be of any number
+- Current aggregation logic for stride align will work only
+  when the stride aligns are power of 2
+- Taking least common multiple of the stride aligns to aggregate
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Raja Ganapathi Busam <rbusam@qti.qualcomm.com>
+---
+ gst-libs/gst/video/gstvideometa.c | 81 +++++++------------------------
+ 1 file changed, 17 insertions(+), 64 deletions(-)
+
+diff --git a/gst-libs/gst/video/gstvideometa.c b/gst-libs/gst/video/gstvideometa.c
+index 6f395f4..3768fae 100644
+--- a/gst-libs/gst/video/gstvideometa.c
++++ b/gst-libs/gst/video/gstvideometa.c
+@@ -174,72 +174,25 @@ gst_video_meta_api_params_aggregator (GstStructure ** aggregated_params,
+   aggregated_align.padding_right =
+       MAX (align0.padding_right, align1.padding_right);
+ 
+-  for (int n = 0; n < GST_VIDEO_MAX_PLANES; ++n)
+-    aggregated_align.stride_align[n] =
+-        align0.stride_align[n] | align1.stride_align[n];
+-
+-  *aggregated_params = gst_structure_new_empty ("video-meta");
+-
+-  gst_buffer_pool_config_set_video_alignment (*aggregated_params,
+-      &aggregated_align);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+-gst_video_meta_api_params_aggregator (GstStructure ** aggregated_params,
+-    const GstStructure * params0, const GstStructure * params1)
+-{
+-  GstVideoAlignment align0;
+-  GstVideoAlignment align1;
+-  GstVideoAlignment aggregated_align;
+-
+-  gst_video_alignment_reset (&align0);
+-  gst_video_alignment_reset (&align1);
+-  gst_video_alignment_reset (&aggregated_align);
+-
+-  if (params0 && (!gst_structure_has_name (params0, "video-meta") ||
+-          !gst_buffer_pool_config_get_video_alignment (params0, &align0))) {
+-    GST_WARNING ("Invalid params");
+-    params0 = NULL;
+-  }
+-
+-  if (params1 && (!gst_structure_has_name (params1, "video-meta") ||
+-          !gst_buffer_pool_config_get_video_alignment (params1, &align1))) {
+-    GST_WARNING ("Invalid params");
+-    params1 = NULL;
+-  }
+-
+-  if (!params0 && !params1) {
+-    *aggregated_params = NULL;
+-    return TRUE;
++  // Calculate the lowest common multiple for the stride alignments.
++  for (int n = 0; n < GST_VIDEO_MAX_PLANES; ++n) {
++    guint max = 0;
++
++    max = MAX (align0.stride_align[n], align1.stride_align[n]);
++    aggregated_align.stride_align[n] = max;
++
++    if ((align0.stride_align[n] == 0) || (align1.stride_align[n] == 0))
++      continue;
++
++    while (
++        ((aggregated_align.stride_align[n] + 1) % (align0.stride_align[n] + 1)
++            != 0)
++        || ((aggregated_align.stride_align[n] + 1)
++                % (align1.stride_align[n] + 1)
++            != 0))
++      aggregated_align.stride_align[n] += max + 1;
+   }
+ 
+-  if (params0 && !params1) {
+-    *aggregated_params = gst_structure_copy (params0);
+-    return TRUE;
+-  }
+-
+-  if (!params0 && params1) {
+-    *aggregated_params = gst_structure_copy (params1);
+-    return TRUE;
+-  }
+-
+-  aggregated_align.padding_top = MAX (align0.padding_top, align1.padding_top);
+-
+-  aggregated_align.padding_bottom =
+-      MAX (align0.padding_bottom, align1.padding_bottom);
+-
+-  aggregated_align.padding_left =
+-      MAX (align0.padding_left, align1.padding_left);
+-
+-  aggregated_align.padding_right =
+-      MAX (align0.padding_right, align1.padding_right);
+-
+-  for (int n = 0; n < GST_VIDEO_MAX_PLANES; ++n)
+-    aggregated_align.stride_align[n] =
+-        align0.stride_align[n] | align1.stride_align[n];
+-
+   *aggregated_params = gst_structure_new_empty ("video-meta");
+ 
+   gst_buffer_pool_config_set_video_alignment (*aggregated_params,
+-- 
+2.25.1
+

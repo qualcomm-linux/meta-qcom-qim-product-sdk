@@ -1,0 +1,99 @@
+From 93d38aa1d311dfccfb5bb1169e7e6192f8db1fee Mon Sep 17 00:00:00 2001
+From: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+Date: Tue, 21 Oct 2025 00:43:10 -0700
+Subject: [PATCH 6/6] videorate: Add option to set passthrough mode
+
+Add option to set passthrough mode in order to prevent videorate to copy
+the buffer when the buffer is not writable.
+
+Signed-off-by: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+---
+ gst/videorate/gstvideorate.c | 17 ++++++++++++++++-
+ gst/videorate/gstvideorate.h |  1 +
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/gst/videorate/gstvideorate.c b/gst/videorate/gstvideorate.c
+index 31aadc8f..d259d9e9 100644
+--- a/gst/videorate/gstvideorate.c
++++ b/gst/videorate/gstvideorate.c
+@@ -102,6 +102,7 @@ enum
+ #define DEFAULT_MAX_DUPLICATION_TIME      0
+ #define DEFAULT_MAX_CLOSING_SEGMENT_DUPLICATION_DURATION   GST_SECOND
+ #define DEFAULT_DROP_OUT_OF_SEGMENT       FALSE
++#define DEFAULT_PASSTHROUGH       FALSE
+ 
+ enum
+ {
+@@ -119,7 +120,8 @@ enum
+   PROP_RATE,
+   PROP_MAX_DUPLICATION_TIME,
+   PROP_MAX_CLOSING_SEGMENT_DUPLICATION_DURATION,
+-  PROP_DROP_OUT_OF_SEGMENT
++  PROP_DROP_OUT_OF_SEGMENT,
++  PROP_PASSTHROUGH
+ };
+ 
+ static GstStaticPadTemplate gst_video_rate_src_template =
+@@ -224,6 +226,10 @@ gst_video_rate_class_init (GstVideoRateClass * klass)
+       g_param_spec_double ("new-pref", "New Pref",
+           "Value indicating how much to prefer new frames (unused)", 0.0, 1.0,
+           DEFAULT_NEW_PREF, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++  g_object_class_install_property (object_class, PROP_PASSTHROUGH,
++      g_param_spec_boolean ("passthrough", "Passthrough",
++          "Set base transform passthrough mode", DEFAULT_PASSTHROUGH,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+ 
+   /**
+    * GstVideoRate:skip-to-first:
+@@ -633,6 +639,8 @@ done:
+     gst_caps_replace (&videorate->in_caps, in_caps);
+   }
+ 
++  gst_base_transform_set_passthrough (trans, videorate->passthrough);
++
+   return ret;
+ 
+ no_framerate:
+@@ -676,6 +684,7 @@ gst_video_rate_init (GstVideoRate * videorate)
+   videorate->new_pref = DEFAULT_NEW_PREF;
+   videorate->drop_only = DEFAULT_DROP_ONLY;
+   videorate->drop_out_of_segment = DEFAULT_DROP_OUT_OF_SEGMENT;
++  videorate->passthrough = DEFAULT_PASSTHROUGH;
+   videorate->average_period = DEFAULT_AVERAGE_PERIOD;
+   videorate->average_period_set = DEFAULT_AVERAGE_PERIOD;
+   videorate->max_rate = DEFAULT_MAX_RATE;
+@@ -2087,6 +2096,9 @@ gst_video_rate_set_property (GObject * object,
+       videorate->drop_out_of_segment = g_value_get_boolean (value);
+       break;
+     }
++    case PROP_PASSTHROUGH:
++      videorate->passthrough = g_value_get_boolean (value);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+@@ -2156,6 +2168,9 @@ gst_video_rate_get_property (GObject * object,
+     case PROP_DROP_OUT_OF_SEGMENT:
+       g_value_set_boolean (value, videorate->drop_out_of_segment);
+       break;
++    case PROP_PASSTHROUGH:
++      g_value_set_boolean (value, videorate->passthrough);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+diff --git a/gst/videorate/gstvideorate.h b/gst/videorate/gstvideorate.h
+index ec7e256f..d6624be9 100644
+--- a/gst/videorate/gstvideorate.h
++++ b/gst/videorate/gstvideorate.h
+@@ -70,6 +70,7 @@ struct _GstVideoRate
+   gboolean skip_to_first;
+   gboolean drop_only;
+   gboolean drop_out_of_segment;
++  gboolean passthrough;
+   guint64 average_period_set;
+ 
+   int max_rate;
+-- 
+2.43.0
+

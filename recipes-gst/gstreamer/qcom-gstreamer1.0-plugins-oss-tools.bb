@@ -10,10 +10,14 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "gstreamer1.0-rtsp-server"
+DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
+DEPENDS += "tensorflow-lite"
+DEPENDS:append:qcom-custom-bsp = " qcom-qnn-sdk"
+DEPENDS:append:qcom-custom-bsp = " qcom-snpe-sdk"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "c7b1665eb6276bbc1f4d3cd6380fb39a85d13fe8"
+SRCREV     = "e00448c781a95f64f2301a119983aff33043a8f6"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-tools"
 S = "${WORKDIR}/gst-plugin-tools"
@@ -22,11 +26,15 @@ S = "${WORKDIR}/gst-plugin-tools"
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
 
+BUILD_CUSTOM:qcom-base-bsp := "FALSE"
+BUILD_CUSTOM:qcom-custom-bsp := "TRUE"
+
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
 EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
+EXTRA_OECMAKE += "-DBUILD_CUSTOM=${BUILD_CUSTOM}"
 
 FILES:${PN} += "${INSTALL_BINDIR}"
 FILES:${PN} += "${INSTALL_LIBDIR}"

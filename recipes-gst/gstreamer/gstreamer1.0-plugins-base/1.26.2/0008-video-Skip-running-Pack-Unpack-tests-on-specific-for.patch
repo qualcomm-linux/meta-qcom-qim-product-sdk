@@ -1,0 +1,40 @@
+From 5209e23a41aa08df67e33713eb0c71d6622db381 Mon Sep 17 00:00:00 2001
+From: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+Date: Fri, 17 Oct 2025 07:30:48 +0000
+Subject: [PATCH 8/8] video: Skip running Pack/Unpack tests on specific formats
+
+Skip running not supported Pack/Unpack tests on NV12_Q08C/NV12_Q10LE32C
+formats.
+
+Signed-off-by: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+---
+ tests/check/libs/video.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/tests/check/libs/video.c b/tests/check/libs/video.c
+index 78a17861..3a795cc5 100644
+--- a/tests/check/libs/video.c
++++ b/tests/check/libs/video.c
+@@ -2185,6 +2185,10 @@ GST_START_TEST (test_video_pack_unpack2)
+     if (format == GST_VIDEO_FORMAT_DMA_DRM)
+       continue;
+ 
++    // Pack/Unpack NV12_Q08C/NV12_Q10LE32C is not yet supported
++    if (format == GST_VIDEO_FORMAT_NV12_Q08C || format == GST_VIDEO_FORMAT_NV12_Q10LE32C )
++      continue;
++
+     finfo = gst_video_format_get_info (format);
+     fail_unless (finfo != NULL);
+ 
+@@ -3265,6 +3269,8 @@ GST_START_TEST (test_video_formats_pstrides)
+         || fmt == GST_VIDEO_FORMAT_NV12_8L128
+         || fmt == GST_VIDEO_FORMAT_NV12_10BE_8L128
+         || fmt == GST_VIDEO_FORMAT_NV12_10LE40_4L4
++        || fmt == GST_VIDEO_FORMAT_NV12_Q08C
++        || fmt == GST_VIDEO_FORMAT_NV12_Q10LE32C
+         || fmt == GST_VIDEO_FORMAT_DMA_DRM
+         || fmt == GST_VIDEO_FORMAT_MT2110T || fmt == GST_VIDEO_FORMAT_MT2110R) {
+       fmt++;
+-- 
+2.47.3
+

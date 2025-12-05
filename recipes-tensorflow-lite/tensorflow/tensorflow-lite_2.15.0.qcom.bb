@@ -62,7 +62,10 @@ EXTRA_OECMAKE += "\
 
 PACKAGECONFIG ?= "gpu"
 
-PACKAGECONFIG[gpu] = " -DTFLITE_ENABLE_GPU=ON ,  -DTFLITE_ENABLE_GPU=OFF, qcom-adreno vulkan-headers, qcom-adreno"
+DEPENDS_GPU:qcom = "qcom-adreno"
+DEPENDS_GPU:qcom-base-bsp = "opencl-headers virtual/egl"
+
+PACKAGECONFIG[gpu] = " -DTFLITE_ENABLE_GPU=ON ,  -DTFLITE_ENABLE_GPU=OFF, vulkan-headers ${DEPENDS_GPU}"
 
 COMPILER = "${@bb.utils.contains('TUNE_FEATURES', 'clang', 'clang', 'gcc', d)}"
 python () {
@@ -117,6 +120,7 @@ do_install:append() {
     cp  --parents $(find . -name "*.h*") ${D}${includedir}/
 
     install -d ${D}${libdir}/pkgconfig
+    [ ! -f "${WORKDIR}/tensorflow-lite.pc.in" ] && cp ${WORKDIR}/sources-unpack/tensorflow-lite.pc.in ${WORKDIR}/tensorflow-lite.pc.in
     install -m 0644 ${WORKDIR}/tensorflow-lite.pc.in ${D}${libdir}/pkgconfig/tensorflow-lite.pc
     sed -i 's:@version@:${PV}:g
         s:@libdir@:${libdir}:g

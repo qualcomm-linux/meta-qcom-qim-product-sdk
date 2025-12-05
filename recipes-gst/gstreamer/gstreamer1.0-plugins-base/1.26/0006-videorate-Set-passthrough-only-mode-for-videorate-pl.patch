@@ -1,0 +1,30 @@
+From 854b2a2d629ac7e4b9aa3b2a59b8b75ce8132d67 Mon Sep 17 00:00:00 2001
+From: Nikolay Hristozov <quic_nhrist@quicinc.com>
+Date: Wed, 30 Apr 2025 09:39:44 +0000
+Subject: [PATCH] videorate: Set passthrough only mode for videorate plugin
+
+Set passthrough in order to prevent videorate to copy the buffer
+when the buffer is not writable
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+Signed-off-by: Nikolay Hristozov <quic_nhrist@quicinc.com>
+---
+ gst/videorate/gstvideorate.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/gst/videorate/gstvideorate.c b/gst/videorate/gstvideorate.c
+index d551323..ddad877 100644
+--- a/gst/videorate/gstvideorate.c
++++ b/gst/videorate/gstvideorate.c
+@@ -633,6 +633,8 @@ done:
+     gst_caps_replace (&videorate->in_caps, in_caps);
+   }
+ 
++  gst_base_transform_set_passthrough (trans, TRUE);
++
+   return ret;
+ 
+ no_framerate:
+-- 
+2.25.1
+

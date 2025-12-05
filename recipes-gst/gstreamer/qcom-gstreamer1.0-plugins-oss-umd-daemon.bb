@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 
 # Dependencies.
 DEPENDS := "gstreamer1.0"
-DEPENDS += "qcom-gstreamer1.0-plugins-oss-mlmeta"
+DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS += "qti-umd-gadget"
 DEPENDS += "${@bb.utils.contains("QCOM_AFR_ALGO", "TRUE", "qti-auto-framing-stabilization", "", d)}"
 
@@ -17,7 +17,7 @@ RDEPENDS:${PN} += "${@bb.utils.contains("QCOM_AFR_ALGO", "TRUE", "qti-auto-frami
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "c7b1665eb6276bbc1f4d3cd6380fb39a85d13fe8"
+SRCREV     = "e00448c781a95f64f2301a119983aff33043a8f6"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-umd-daemon"
 S = "${WORKDIR}/gst-umd-daemon"

@@ -1,0 +1,157 @@
+From 2e6037e7cd53f1bb05e76c24ebaff159c35751dd Mon Sep 17 00:00:00 2001
+From: Hui Liu <huliu@qti.qualcomm.com>
+Date: Tue, 18 Mar 2025 11:04:21 +0800
+Subject: [PATCH] video: Add support for NV12_Q10LE32C (compressed 10-bit)
+ format
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Hui Liu <huliu@qti.qualcomm.com>
+---
+ gst-libs/gst/video/video-format.c | 23 +++++++++++++++++++++
+ gst-libs/gst/video/video-format.h | 14 +++++++++++--
+ gst-libs/gst/video/video-info.c   | 34 +++++++++++++++++++++++++++++++
+ 3 files changed, 69 insertions(+), 2 deletions(-)
+
+diff --git a/gst-libs/gst/video/video-format.c b/gst-libs/gst/video/video-format.c
+index 6b7bedb..d3880f3 100644
+--- a/gst-libs/gst/video/video-format.c
++++ b/gst-libs/gst/video/video-format.c
+@@ -1742,6 +1742,24 @@ pack_NV12_Q08C (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
+   GST_FIXME ("Pack NV12_Q08C is not yet supported.");
+ }
+ 
++#define PACK_NV12_Q10LE32C GST_VIDEO_FORMAT_NV12_10LE32, unpack_NV12_Q10LE32C, 1, pack_NV12_Q10LE32C
++static void
++unpack_NV12_Q10LE32C (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
++    gpointer dest, const gpointer data[GST_VIDEO_MAX_PLANES],
++    const gint stride[GST_VIDEO_MAX_PLANES], gint x, gint y, gint width)
++{
++  GST_FIXME ("Unpack NV12_Q10LE32C is not yet supported.");
++}
++
++static void
++pack_NV12_Q10LE32C (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
++    const gpointer src, gint sstride, gpointer data[GST_VIDEO_MAX_PLANES],
++    const gint stride[GST_VIDEO_MAX_PLANES], GstVideoChromaSite chroma_site,
++    gint y, gint width)
++{
++  GST_FIXME ("Pack NV12_Q10LE32C is not yet supported.");
++}
++
+ #define PACK_AV12 GST_VIDEO_FORMAT_AYUV, unpack_AV12, 1, pack_AV12
+ static void
+ unpack_AV12 (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
+@@ -8120,6 +8138,9 @@ static const VideoFormat formats[] = {
+   MAKE_YUV_FORMAT (NV12_Q08C, "raw video",
+       GST_MAKE_FOURCC ('Q', '0', '8', 'C'), DPTH888, PSTR122, PLANE011,
+       OFFS001, SUB420, PACK_NV12_Q08C),
++  MAKE_YUV_FORMAT (NV12_Q10LE32C, "raw video",
++      GST_MAKE_FOURCC ('Q', '1', '0', 'C'), DPTH10_10_10, PSTR0, PLANE011,
++      OFFS001, SUB420, PACK_NV12_Q10LE32C),
+   MAKE_YUV_LE_FORMAT (Y216_LE, "raw video", 0x00000000, DPTH16_16_16,
+       PSTR488, PLANE0, OFFS0, SUB422, PACK_Y216_LE),
+   MAKE_YUV_FORMAT (Y216_BE, "raw video", 0x00000000, DPTH16_16_16,
+@@ -8392,6 +8413,8 @@ gst_video_format_from_fourcc (guint32 fourcc)
+       return GST_VIDEO_FORMAT_BGR10A2_LE;
+     case GST_MAKE_FOURCC ('Q', '0', '8', 'C'):
+       return GST_VIDEO_FORMAT_NV12_Q08C;
++    case GST_MAKE_FOURCC ('Q', '1', '0', 'C'):
++      return GST_VIDEO_FORMAT_NV12_Q10LE32C;
+ 
+     default:
+       return GST_VIDEO_FORMAT_UNKNOWN;
+diff --git a/gst-libs/gst/video/video-format.h b/gst-libs/gst/video/video-format.h
+index fa1baf1..dfded04 100644
+--- a/gst-libs/gst/video/video-format.h
++++ b/gst-libs/gst/video/video-format.h
+@@ -170,6 +170,7 @@ G_BEGIN_DECLS
+  * @GST_VIDEO_FORMAT_GBR_16BE: planar 4:4:4 RGB, 16 bits per channel (Since: 1.24)
+  * @GST_VIDEO_FORMAT_RBGA: packed RGB with alpha, 8 bits per channel (Since: 1.24)
+  * @GST_VIDEO_FORMAT_NV12_Q08C: Qualcomm NV12 8bit compressed format
++ * @GST_VIDEO_FORMAT_NV12_Q10LE32C: Qualcomm NV12 10-bit compressed format
+  * @GST_VIDEO_FORMAT_Y216_LE: packed 4:2:2 YUV, 16 bits per channel (Y-U-Y-V) (Since: 1.26)
+  * @GST_VIDEO_FORMAT_Y216_BE: packed 4:2:2 YUV, 16 bits per channel (Y-U-Y-V) (Since: 1.26)
+  * @GST_VIDEO_FORMAT_Y416_LE: packed 4:4:4:4 YUV, 16 bits per channel(U-Y-V-A) (Since: 1.26)
+@@ -633,6 +634,13 @@ typedef enum {
+    */
+   GST_VIDEO_FORMAT_NV12_Q08C,
+ 
++  /**
++   * GST_VIDEO_FORMAT_NV12_Q10LE32C:
++   *
++   * Qualcomm NV12 10-bit compressed format.
++   */
++  GST_VIDEO_FORMAT_NV12_Q10LE32C,
++
+   /**
+    * GST_VIDEO_FORMAT_Y216_LE:
+    *
+@@ -1173,7 +1181,8 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
+     "IYU2, RGBx, xRGB, BGRx, xBGR, RGB, BGR, Y42B, NV16, NV61, YUY2, YVYU, " \
+     "UYVY, VYUY, I420, YV12, NV12, NV21, NV12_16L32S, NV12_32L32, NV12_4L4, " \
+     "NV12_64Z32, NV12_8L128, Y41B, IYU1, YUV9, YVU9, BGR16, RGB16, BGR15, " \
+-    "RGB15, RGB8P, GRAY16_BE, GRAY16_LE, GRAY10_LE16, GRAY10_LE32, GRAY8, NV12_Q08C"
++    "RGB15, RGB8P, GRAY16_BE, GRAY16_LE, GRAY10_LE16, GRAY10_LE32, GRAY8, " \
++    "NV12_Q08C, NV12_Q10LE32C"
+ #elif G_BYTE_ORDER == G_LITTLE_ENDIAN
+ #define GST_VIDEO_FORMATS_ALL_STR "A444_16LE, A444_16BE, Y416_LE, AYUV64, " \
+     "RGBA64_LE, ARGB64, ARGB64_LE, BGRA64_LE, ABGR64_LE, Y416_BE, RGBA64_BE, " \
+@@ -1192,7 +1201,8 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
+     "v308, IYU2, RGBx, xRGB, BGRx, xBGR, RGB, BGR, Y42B, NV16, NV61, YUY2, " \
+     "YVYU, UYVY, VYUY, I420, YV12, NV12, NV21, NV12_16L32S, NV12_32L32, " \
+     "NV12_4L4, NV12_64Z32, NV12_8L128, Y41B, IYU1, YUV9, YVU9, BGR16, RGB16, " \
+-    "BGR15, RGB15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE16, GRAY10_LE32, GRAY8, NV12_Q08C"
++    "BGR15, RGB15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE16, GRAY10_LE32, GRAY8, " \
++    "NV12_Q08C, NV12_Q10LE32C"
+ #endif
+ 
+ /**
+diff --git a/gst-libs/gst/video/video-info.c b/gst-libs/gst/video/video-info.c
+index 6941eeb..2f57179 100644
+--- a/gst-libs/gst/video/video-info.c
++++ b/gst-libs/gst/video/video-info.c
+@@ -1427,6 +1427,40 @@ fill_planes (GstVideoInfo * info, gsize plane_size[GST_VIDEO_MAX_PLANES])
+       }
+       break;
+     }
++    case GST_VIDEO_FORMAT_NV12_Q10LE32C:
++    {
++      gint y_plane_stride = 0, y_meta_stride = 0, y_meta_scanline = 0;
++      gint uv_plane_stride = 0, uv_meta_stride = 0, uv_meta_scanline = 0;
++      gint y_plane_scanline = 0, y_plane_size = 0, y_meta_size = 0;
++      gint uv_plane_scanline = 0, uv_plane_size = 0, uv_meta_size = 0;
++
++      y_plane_stride = GST_ROUND_UP_N (
++          (GST_ROUND_UP_N (width, 192) * 4 / 3), 256);
++      y_plane_scanline = GST_ROUND_UP_16 (height);
++      uv_plane_stride = GST_ROUND_UP_N (
++          (GST_ROUND_UP_N (width, 192) * 4 / 3), 256);
++      uv_plane_scanline = GST_ROUND_UP_16 (GST_ROUND_UP_2 (height) / 2);
++
++      y_meta_stride = GST_ROUND_UP_64 (GST_ROUND_UP_N (width, 48) / 48);
++      y_meta_scanline = GST_ROUND_UP_16 (GST_ROUND_UP_4 (height) / 4);
++      uv_meta_stride = GST_ROUND_UP_64 (
++          GST_ROUND_UP_N ((GST_ROUND_UP_2 (width) / 2), 24) / 24);
++      uv_meta_scanline = GST_ROUND_UP_16 (
++          GST_ROUND_UP_4 (GST_ROUND_UP_2 (height) / 2) / 4);
++
++      y_plane_size = GST_ROUND_UP_N (y_plane_stride * y_plane_scanline, 4096);
++      uv_plane_size = GST_ROUND_UP_N (uv_plane_stride * uv_plane_scanline, 4096);
++
++      y_meta_size = GST_ROUND_UP_N (y_meta_stride * y_meta_scanline, 4096);
++      uv_meta_size = GST_ROUND_UP_N (uv_meta_stride * uv_meta_scanline, 4096);
++
++      info->stride[0] = y_plane_stride;
++      info->stride[1] = uv_plane_stride;
++      info->offset[0] = 0;
++      info->offset[1] = y_plane_size + y_meta_size;
++      info->size = info->offset[1] + uv_plane_size + uv_meta_size;
++      break;
++    }
+     case GST_VIDEO_FORMAT_ENCODED:
+     case GST_VIDEO_FORMAT_DMA_DRM:
+       break;
+-- 
+2.25.1
+

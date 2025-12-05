@@ -9,7 +9,7 @@ inherit packagegroup
 
 PACKAGES = "${PN}"
 
-RDEPENDS:${PN}:qcom-custom-bsp = " \
+RDEPENDS:${PN}:qcom = " \
       gstreamer1.0 \
       gstreamer1.0-plugins-base \
       gstreamer1.0-plugins-good \

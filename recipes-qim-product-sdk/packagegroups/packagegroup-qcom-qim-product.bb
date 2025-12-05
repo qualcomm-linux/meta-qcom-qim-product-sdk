@@ -11,7 +11,7 @@ SRC_URI += "file://install.sh"
 
 PACKAGES = "${PN}"
 
-RDEPENDS:${PN}:qcom-custom-bsp = " \
+RDEPENDS:${PN}:qcom = " \
     packagegroup-qcom-gst \
     packagegroup-qcom-ml \
   "

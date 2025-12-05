@@ -1,0 +1,59 @@
+From 1152525659275b104a01ae8b811943b1463606d6 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <ppachang@qti.qualcomm.com>
+Date: Wed, 30 Apr 2025 12:12:35 +0530
+Subject: [PATCH] v4l2: Add support for colorimetry bt2100-pq and 1:4:5:3
+
+- Colorimetry bt2100-pq is a variant of colorspace
+  V4L2_COLORSPACE_BT2020
+- Colorimetry 1:4:5:3 is a full-range variant of colorspace
+  V4L2_COLORSPACE_470_SYSTEM_BG
+
+Upstream-Status: Pending
+
+Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2object.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 2c4fe1b..f87523c 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -2599,6 +2599,34 @@ gst_v4l2_object_add_colorspace (GstV4l2Object * v4l2object, GstStructure * s,
+           struct v4l2_format alt_fmt;
+           memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
+ 
++          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
++            alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++          else
++            alt_fmt.fmt.pix.quantization = V4L2_QUANTIZATION_FULL_RANGE;
++
++          if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo))
++            gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
++        }
++        if (colorspace == V4L2_COLORSPACE_BT2020) {
++          /* support for colorimetry bt2100-pq, variant of colorspace
++           * V4L2_COLORSPACE_BT2020 */
++          struct v4l2_format alt_fmt;
++          memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
++
++          if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
++            alt_fmt.fmt.pix_mp.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
++          else
++            alt_fmt.fmt.pix.xfer_func = V4L2_XFER_FUNC_SMPTE2084;
++
++          if (gst_v4l2_object_get_colorspace (v4l2object, &alt_fmt, &cinfo))
++            gst_v4l2_object_fill_colorimetry_list (&list, &cinfo);
++        }
++        if (colorspace == V4L2_COLORSPACE_470_SYSTEM_BG) {
++          /* support for full-range variants of colorspaces
++           * V4L2_COLORSPACE_470_SYSTEM_BG */
++          struct v4l2_format alt_fmt;
++          memcpy (&alt_fmt, &fmt, sizeof (alt_fmt));
++
+           if (V4L2_TYPE_IS_MULTIPLANAR (v4l2object->type))
+             alt_fmt.fmt.pix_mp.quantization = V4L2_QUANTIZATION_FULL_RANGE;
+           else
+-- 
+2.25.1
+

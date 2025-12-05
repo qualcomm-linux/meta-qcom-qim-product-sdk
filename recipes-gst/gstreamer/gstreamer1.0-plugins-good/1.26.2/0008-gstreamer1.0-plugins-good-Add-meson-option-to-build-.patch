@@ -1,0 +1,180 @@
+From 8b693815c48b2c6b7c626e09c8e0c9b33f00d3df Mon Sep 17 00:00:00 2001
+From: Stilyan Uzunov <suzunov@qti.qualcomm.com>
+Date: Thu, 20 Feb 2025 14:04:15 +0000
+Subject: [PATCH] gstreamer1.0-plugins-good: Add meson option to build all
+ plugins
+
+- Default value is to build all plugins
+- If reduced set of plugins is selected, then only are build:
+    ext/pulse
+    sys/v4l2
+
+Upstream-Status: Inappropriate [Qualcomm specific]
+
+Signed-off-by: Stilyan Uzunov <suzunov@qti.qualcomm.com>
+---
+ ext/meson.build   | 56 +++++++++++++++++++++++++----------------------
+ meson.build       | 30 +++++++++++++++----------
+ meson_options.txt |  4 ++++
+ sys/meson.build   | 22 +++++++++++--------
+ 4 files changed, 66 insertions(+), 46 deletions(-)
+
+diff --git a/ext/meson.build b/ext/meson.build
+index ecd3ea6..22e4e04 100644
+--- a/ext/meson.build
++++ b/ext/meson.build
+@@ -64,29 +64,33 @@ if get_option('soup').allowed() or get_option('adaptivedemux2').allowed()
+   endif
+ endif
+ 
+-subdir('aalib')
+-subdir('adaptivedemux2')
+-subdir('amrnb')
+-subdir('amrwbdec')
+-subdir('cairo')
+-subdir('flac')
+-subdir('gdk_pixbuf')
+-subdir('gtk')
+-subdir('jack')
+-subdir('jpeg')
+-subdir('lame')
+-subdir('libcaca')
+-subdir('dv')
+-subdir('libpng')
+-subdir('mpg123')
+-subdir('raw1394')
+-subdir('qt')
+-subdir('qt6')
+-subdir('pulse')
+-subdir('shout2')
+-subdir('soup')
+-subdir('speex')
+-subdir('taglib')
+-subdir('twolame')
+-subdir('vpx')
+-subdir('wavpack')
++if build_all_plugins
++  subdir('aalib')
++  subdir('adaptivedemux2')
++  subdir('amrnb')
++  subdir('amrwbdec')
++  subdir('cairo')
++  subdir('flac')
++  subdir('gdk_pixbuf')
++  subdir('gtk')
++  subdir('jack')
++  subdir('jpeg')
++  subdir('lame')
++  subdir('libcaca')
++  subdir('dv')
++  subdir('libpng')
++  subdir('mpg123')
++  subdir('raw1394')
++  subdir('qt')
++  subdir('qt6')
++  subdir('pulse')
++  subdir('shout2')
++  subdir('soup')
++  subdir('speex')
++  subdir('taglib')
++  subdir('twolame')
++  subdir('vpx')
++  subdir('wavpack')
++else
++  subdir('pulse')
++endif
+diff --git a/meson.build b/meson.build
+index e28cc1c..df7a27e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -524,11 +524,18 @@ else
+   pathsep = ':'
+ endif
+ 
+-subdir('gst')
+-subdir('sys')
+-subdir('ext')
+-subdir('tests')
+-subdir('docs')
++build_all_plugins = get_option('build-all-plugins')
++
++if build_all_plugins
++  subdir('gst')
++  subdir('sys')
++  subdir('ext')
++  subdir('tests')
++  subdir('docs')
++else
++  subdir('ext')
++  subdir('sys')
++endif
+ 
+ if have_orcc and orc_targets.length() > 0
+   update_orc_dist_files = find_program('scripts/update-orc-dist-files.py')
+@@ -553,14 +560,15 @@ if have_orcc and orc_targets.length() > 0
+   endif
+ endif
+ 
+-# xgettext is optional (on Windows for instance)
+-if find_program('xgettext', required : get_option('nls')).found()
+-  cdata.set('ENABLE_NLS', 1)
+-  subdir('po')
++if build_all_plugins
++  # xgettext is optional (on Windows for instance)
++  if find_program('xgettext', required : get_option('nls')).found()
++    cdata.set('ENABLE_NLS', 1)
++    subdir('po')
++  endif
++  subdir('scripts')
+ endif
+ 
+-subdir('scripts')
+-
+ # Set release date
+ if gst_version_nano == 0
+   extract_release_date = find_program('scripts/extract-release-date-from-doap-file.py')
+diff --git a/meson_options.txt b/meson_options.txt
+index c110e30..1a10887 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -128,6 +128,10 @@ option('package-origin', type : 'string', value : 'Unknown package origin', yiel
+        description : 'package origin URL to use in plugins')
+ option('doc', type : 'feature', value : 'auto', yield: true,
+        description: 'Enable documentation.')
++
++# Build options
++option('build-all-plugins', type: 'boolean', value: true,
++       description: 'Enable build of all plugins')
+ option('glib_debug', type : 'feature', value : 'auto', yield : true, description : 'Enable GLib debug infrastructure (see docs/macros.txt)')
+ option('glib_assert', type : 'boolean', value : true, yield : true, description : 'Enable GLib assertion (see docs/macros.txt)',
+   deprecated: {'enabled' : 'true', 'disabled' : 'false', 'auto' : 'false'},
+diff --git a/sys/meson.build b/sys/meson.build
+index d337015..32ee353 100644
+--- a/sys/meson.build
++++ b/sys/meson.build
+@@ -1,9 +1,13 @@
+-subdir('directsound')
+-subdir('oss')
+-subdir('oss4')
+-subdir('osxaudio')
+-subdir('osxvideo')
+-subdir('rpicamsrc')
+-subdir('v4l2')
+-subdir('waveform')
+-subdir('ximage')
++if build_all_plugins
++  subdir('directsound')
++  subdir('oss')
++  subdir('oss4')
++  subdir('osxaudio')
++  subdir('osxvideo')
++  subdir('rpicamsrc')
++  subdir('v4l2')
++  subdir('waveform')
++  subdir('ximage')
++else
++  subdir('v4l2')
++endif
+-- 
+2.25.1
+

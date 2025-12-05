@@ -1,7 +1,7 @@
 inherit systemd
 
 # Prevent systemd service from being installed
-do_install:append:qcom-custom-bsp () {
+do_install:append:qcom () {
     # Remove the systemd service file
     if [ -f "${D}${systemd_system_unitdir}/redis.service" ]; then
         rm -f ${D}${systemd_system_unitdir}/redis.service
