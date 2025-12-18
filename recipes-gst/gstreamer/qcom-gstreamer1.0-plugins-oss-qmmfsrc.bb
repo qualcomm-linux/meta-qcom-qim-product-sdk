@@ -17,7 +17,8 @@ SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gs
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
 SRCREV     = "e00448c781a95f64f2301a119983aff33043a8f6"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-qmmfsrc"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-qmmfsrc \
+           file://0001-qtiqmmfsrc-add-support-for-cam-server-system-events.patch"
 S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.

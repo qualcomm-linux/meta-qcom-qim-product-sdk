@@ -1,0 +1,165 @@
+From 2074899baed637a442f8abe4730f1a581b17e2cf Mon Sep 17 00:00:00 2001
+From: Deepali Reddy Karra <quic_dkarra@quicinc.com>
+Date: Thu, 24 Jul 2025 10:49:06 +0530
+Subject: [PATCH] qtiqmmfsrc: add support for cam-server system events
+
+- Added handling for new system events from cam-server in qtiqmmfsrc
+- These events are converted into GStreamer bus messages so application can monitor and react to camera state changes in real time
+
+Change-Id: I7c32793a4ea94ca45bca786aa623a282386649d6
+---
+ qmmf_source.c          | 38 ++++++++++++++
+ qmmf_source_context.cc | 60 +++++++++++++++++++++++
+ qmmf_source_context.h  |  5 ++
+ 3 files changed, 103 insertions(+)
+
+diff --git a/qmmf_source.c b/qmmf_source.c
+index 4383eb52..780c0fbc 100644
+--- a/qmmf_source.c
++++ b/qmmf_source.c
+@@ -868,6 +868,8 @@ static void
+ qmmfsrc_event_callback (guint event, gpointer userdata)
+ {
+   GstQmmfSrc *qmmfsrc = GST_QMMFSRC (userdata);
++  GstStructure *event_msg = NULL;
++  GstMessage *message = NULL;
+ 
+   switch (event) {
+     case EVENT_SERVICE_DIED:
+@@ -905,10 +907,46 @@ qmmfsrc_event_callback (guint event, gpointer userdata)
+       GST_WARNING_OBJECT (qmmfsrc, "Camera device has encountered non-fatal "
+           "metadata drop error !");
+       break;
++    case EVENT_SOF_FREEZE:
++      GST_LOG_OBJECT (qmmfsrc, "SOF Freeze occured");
++      break;
++    case EVENT_RECOVERYFAILURE:
++      GST_LOG_OBJECT (qmmfsrc, "Recovery Failure occured");
++      break;
++    case EVENT_FATAL:
++      GST_LOG_OBJECT (qmmfsrc, "Fatal Error occured");
++      break;
++    case EVENT_RECOVERYSUCCESS:
++      GST_LOG_OBJECT (qmmfsrc, "Recovery success occured");
++      break;
++    case EVENT_INTERNAL_RECOVERY:
++      GST_LOG_OBJECT (qmmfsrc, "Internal Recovery occured");
++      break;
+     default:
+       GST_WARNING_OBJECT (qmmfsrc, "Unknown camera device event");
+       break;
+   }
++
++  event_msg = gst_structure_new ("qmmfsrc-event",
++      "event-type", G_TYPE_UINT, event,
++      NULL);
++
++  if (!event_msg) {
++    GST_WARNING_OBJECT (qmmfsrc, "Failed to create structure for event %d", event);
++    return;
++  }
++
++  message = gst_message_new_element (GST_OBJECT (qmmfsrc), event_msg);
++  if (!message) {
++    gst_structure_free (event_msg);
++    GST_WARNING_OBJECT (qmmfsrc, "Failed to create message for event %d", event);
++    return;
++  }
++
++  if (!gst_element_post_message (GST_ELEMENT (qmmfsrc), message)) {
++    gst_message_unref(message);
++    GST_WARNING_OBJECT (qmmfsrc, "Failed to post message for event %d", event);
++  }
+ }
+ 
+ static void
+diff --git a/qmmf_source_context.cc b/qmmf_source_context.cc
+index a092b7fa..c9850492 100644
+--- a/qmmf_source_context.cc
++++ b/qmmf_source_context.cc
+@@ -1170,6 +1170,66 @@ camera_event_callback (GstQmmfContext * context,
+       event = EVENT_CAMERA_CLOSED;
+       break;
+     }
++    case  ::qmmf::recorder::EventType::kSOFFreeze:
++    {
++      g_assert (size == sizeof (guint));
++      uint32_t camera_id = *(static_cast<uint32_t*>(payload));
++
++      // Ignore event if it is not for this camera id.
++      if (camera_id != context->camera_id)
++        return;
++
++      event = EVENT_SOF_FREEZE;
++      break;
++    }
++    case  ::qmmf::recorder::EventType::kRecoveryFailure:
++    {
++      g_assert (size == sizeof (guint));
++      uint32_t camera_id = *(static_cast<uint32_t*>(payload));
++
++      // Ignore event if it is not for this camera id.
++      if (camera_id != context->camera_id)
++        return;
++
++      event = EVENT_RECOVERYFAILURE;
++      break;
++    }
++    case  ::qmmf::recorder::EventType::kFatal:
++    {
++      g_assert (size == sizeof (guint));
++      uint32_t camera_id = *(static_cast<uint32_t*>(payload));
++
++      // Ignore event if it is not for this camera id.
++      if (camera_id != context->camera_id)
++        return;
++
++      event = EVENT_FATAL;
++      break;
++    }
++    case  ::qmmf::recorder::EventType::kRecoverySuccess:
++    {
++      g_assert (size == sizeof (guint));
++      uint32_t camera_id = *(static_cast<uint32_t*>(payload));
++
++      // Ignore event if it is not for this camera id.
++      if (camera_id != context->camera_id)
++        return;
++
++      event = EVENT_RECOVERYSUCCESS;
++      break;
++    }
++    case  ::qmmf::recorder::EventType::kInternal_Recovery:
++    {
++      g_assert (size == sizeof (guint));
++      uint32_t camera_id = *(static_cast<uint32_t*>(payload));
++
++      // Ignore event if it is not for this camera id.
++      if (camera_id != context->camera_id)
++        return;
++
++      event = EVENT_INTERNAL_RECOVERY;
++      break;
++    }
+     default:
+       event = EVENT_UNKNOWN;
+       break;
+diff --git a/qmmf_source_context.h b/qmmf_source_context.h
+index 4fa67099..e013cd61 100644
+--- a/qmmf_source_context.h
++++ b/qmmf_source_context.h
+@@ -88,6 +88,11 @@ enum {
+   EVENT_CAMERA_CLOSED,
+   EVENT_FRAME_ERROR,
+   EVENT_METADATA_ERROR,
++  EVENT_SOF_FREEZE,
++  EVENT_RECOVERYFAILURE,
++  EVENT_FATAL,
++  EVENT_RECOVERYSUCCESS,
++  EVENT_INTERNAL_RECOVERY,
+ };
+ 
+ enum
+-- 
+2.34.1
+
