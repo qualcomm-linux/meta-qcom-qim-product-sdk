@@ -7,6 +7,3 @@ SRC_URI:append:qcom = "\
   file://0004-waylandsink-increase-timeout-limitation-in-gst_wl_wi.patch \
   file://0005-wayland-Add-support-for-NV12_Q08C-compressed-8-bit-f.patch \
 "
-
-PACKAGECONFIG:append:qcom = " webrtc sctp srt srtp"
-DEPENDS:append:qcom = " libnice libsrtp srt"

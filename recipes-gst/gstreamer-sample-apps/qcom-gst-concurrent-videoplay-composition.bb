@@ -16,7 +16,7 @@ DEPENDS += "qcom-gst-sample-apps-utils"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "e00448c781a95f64f2301a119983aff33043a8f6"
+SRCREV     = "dcb4b8252b66304545c5efb5cb7c8fecc26b6680"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-concurrent-videoplay-composition"
 S = "${WORKDIR}/gst-concurrent-videoplay-composition"

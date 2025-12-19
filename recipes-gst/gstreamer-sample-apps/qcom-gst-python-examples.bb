@@ -7,11 +7,11 @@ LICENSE = "BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 # Dependencies.
-RDEPENDS:${PN} := "gstreamer1.0-python bash"
+RDEPENDS:${PN} := "gstreamer1.0-python bash python3-virtualenv python3-pip git"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "e00448c781a95f64f2301a119983aff33043a8f6"
+SRCREV     = "dcb4b8252b66304545c5efb5cb7c8fecc26b6680"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-python-examples"
 S = "${WORKDIR}/gst-python-examples"

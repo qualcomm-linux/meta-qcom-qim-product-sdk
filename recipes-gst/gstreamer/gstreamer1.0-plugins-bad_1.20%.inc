@@ -12,9 +12,6 @@ SRC_URI:append:qcom = "\
   file://0007-gstreamer1.0-plugins-bad-Add-meson-option-to-build-a.patch \
 "
 
-PACKAGECONFIG:append:qcom = " webrtc sctp srt srtp"
-DEPENDS:append:qcom = " weston libnice libsrtp srt"
-
 do_configure:prepend:qcom() {
   install -d ${STAGING_DIR_HOST}${datadir}/wayland-protocols/stable/gbm-buffer-backend/
   cp ${TMPDIR}/sysroots-components/${TUNE_PKGARCH}/weston/usr/share/libweston-10/protocols/gbm-buffer-backend.xml ${STAGING_DIR_HOST}${datadir}/wayland-protocols/stable/gbm-buffer-backend

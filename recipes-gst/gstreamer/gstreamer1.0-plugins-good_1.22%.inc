@@ -1,7 +1,3 @@
-DEPENDS:append:qcom = " gtk+3"
-
-PACKAGECONFIG:append:qcom = " gtk"
-
 FILESEXTRAPATHS:prepend:qcom := "${THISDIR}/gstreamer1.0-plugins-good/1.22:"
 
 SRC_URI:append:qcom = "\

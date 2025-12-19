@@ -1,9 +1,6 @@
 DEPENDS:append:qcom = " qemu-native"
 DEPENDS:append:qcs9100 = " qcom-displaydlkm"
 DEPENDS:append:qcs8300 = " qcom-displaydlkm"
-DEPENDS:append:qcom = " gtk+3"
-
-PACKAGECONFIG:append:qcom = " gtk"
 
 FILESEXTRAPATHS:prepend:qcom := "${THISDIR}/gstreamer1.0-plugins-good/1.20:"
 

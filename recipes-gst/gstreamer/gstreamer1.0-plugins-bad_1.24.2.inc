@@ -8,6 +8,3 @@ SRC_URI:append:qcom = "\
   file://0005-wayland-Add-support-for-NV12_Q08C-compressed-8-bit-f.patch \
   file://0006-Hack-wayland-Add-NV12_Q08C-to-shm-formats.patch \
 "
-
-PACKAGECONFIG:append:qcom = " webrtc sctp srt srtp"
-DEPENDS:append:qcom = " libnice libsrtp srt"

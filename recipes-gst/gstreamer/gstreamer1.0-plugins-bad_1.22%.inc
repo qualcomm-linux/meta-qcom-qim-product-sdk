@@ -9,6 +9,3 @@ SRC_URI:append:qcom = "\
   file://0006-waylandsink-Restore-support-for-render-rectangle.patch \
   file://0007-waylandsink-window-not-null-before-using.patch \
 "
-
-PACKAGECONFIG:append:qcom = " webrtc sctp srt srtp"
-DEPENDS:append:qcom = " libnice libsrtp srt"
