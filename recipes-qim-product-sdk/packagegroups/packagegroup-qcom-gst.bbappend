@@ -1,5 +1,6 @@
 RDEPENDS:packagegroup-qcom-gst:append:qcom = "  \
         qcom-gstreamer1.0-plugins-oss-mltflite \
+        qcom-gstreamer1.0-plugins-oss-mlonnx \
   "
 
 RDEPENDS:packagegroup-qcom-gst:append:qcom-custom-bsp = "  \

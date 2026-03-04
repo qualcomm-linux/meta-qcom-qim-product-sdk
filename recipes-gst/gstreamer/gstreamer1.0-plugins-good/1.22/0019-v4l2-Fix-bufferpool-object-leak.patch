@@ -1,0 +1,32 @@
+From 59565e36013de4250a928a950868f96e80d10e22 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <ppachang@qti.qualcomm.com>
+Date: Thu, 22 Jan 2026 11:13:46 +0530
+Subject: [PATCH] v4l2videoenc: Fix bufferpool object leak
+
+- In enc_handle_frame(), if the task is in paused/stopped state,
+  the bufferpool object that we get from v4l2output object is not
+  getting unref if the pool is set active by upstream element.
+
+Upstream-Status: Pending
+
+Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2videoenc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2videoenc.c b/sys/v4l2/gstv4l2videoenc.c
+index 86c580d..ca54ecf 100644
+--- a/sys/v4l2/gstv4l2videoenc.c
++++ b/sys/v4l2/gstv4l2videoenc.c
+@@ -854,9 +854,9 @@ gst_v4l2_video_enc_handle_frame (GstVideoEncoder * encoder,
+           gst_object_unref (pool);
+         goto activate_failed;
+       }
+-      if (pool)
+-        gst_object_unref (pool);
+     }
++    if (pool)
++      gst_object_unref (pool);
+ 
+     {
+       GstBufferPool *cpool =

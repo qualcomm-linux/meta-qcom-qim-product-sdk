@@ -1,0 +1,37 @@
+From e893651d997f89b93c8ee5b3d84862817baddf83 Mon Sep 17 00:00:00 2001
+From: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+Date: Mon, 8 Dec 2025 12:41:44 +0000
+Subject: [PATCH 19/19] v4l2: Backport alternative output format support
+
+Some decoder have the ability to output multiple formats.
+Restore this functionality by replacing acquired_caps with the new caps.
+Backport from: https://salsa.debian.org/gstreamer-team/gst-plugins-good1.0/
+-/commit/323d9a3046d025da2ca8e43a5ea48ae0400c114c#c0a42aff914bd304990942c0548e70b44de4d1e2
+
+Upstream-Status: Backport
+
+Signed-off-by: Kemal Rasim Sh <kshakir@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2videodec.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 22bcf82..8a8d8d5 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -520,9 +520,10 @@ gst_v4l2_video_dec_negotiate (GstVideoDecoder * decoder)
+   GST_DEBUG_OBJECT (self, "Chosen decoded caps: %" GST_PTR_FORMAT, caps);
+ 
+   /* Try to set negotiated format, on success replace acquired format */
+-  if (gst_v4l2_object_set_format (self->v4l2capture, caps, &error))
++  if (gst_v4l2_object_set_format (self->v4l2capture, caps, &error)) {
++    gst_caps_replace (&acquired_caps, caps);
+     info = self->v4l2capture->info;
+-  else
++  } else
+     gst_v4l2_clear_error (&error);
+ 
+ use_acquired_caps:
+-- 
+2.47.3
+

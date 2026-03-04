@@ -20,4 +20,6 @@ SRC_URI:append:qcom = "\
     file://0017-v4l2-Make-the-extra-controls-property-dynamic.patch \
     file://0018-v4l2-Add-support-for-colorimetry-bt2100-pq-and-1-4-5.patch \
     file://0019-v4l2-Enable-copy-at-threshold-for-encoder-output.patch \
+    file://0020-v4l2-Add-support-for-GST_VIDEO_FORMAT_NV12_Q10LE32C-.patch \
+    file://0021-v4l2-Fix-bufferpool-object-leak-in-video-encoder.patch \
 "

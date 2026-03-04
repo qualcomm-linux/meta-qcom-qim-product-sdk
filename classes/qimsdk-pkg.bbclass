@@ -142,6 +142,10 @@ do_generate_qim_sdk[depends] = " \
     gdk-pixbuf:do_package_write_ipk \
     gtk+3:do_package_write_ipk \
     hiredis:do_package_write_ipk \
+    redis:do_package_write_ipk \
+    readline:do_package_write_ipk \
+    lua:do_package_write_ipk \
+    ncurses:do_package_write_ipk \
     json-glib:do_package_write_ipk \
     liba52:do_package_write_ipk \
     libdaemon:do_package_write_ipk \
@@ -228,7 +232,8 @@ def get_pkgs_list(d):
                 "libpsl5", "librsvg-2-2", "libsoup-2.4_",
                 "libtheora_", "libwebp_", "mpg123_",
                 "liborc-0", "libsbc1", "libspeex1", "libtag1", "libjson-glib-1.0-0",
-                "libmosquitto1", "librdkafka_", "hiredis_", "libnice_", "libsrtp2-1_",
+                "libmosquitto1", "librdkafka_", "hiredis_", "redis_",
+                "libreadline8", "lua_", "ncurses_", "libnice_", "libsrtp2-1_",
                 "libsrt1.4_", "qcom-rvsdk_1.0", "gobject-introspection_",
                 "python3-pycairo_", "python3-pygobject_", "python3-pip_",
                 "python3-virtualenv_", "git_"]

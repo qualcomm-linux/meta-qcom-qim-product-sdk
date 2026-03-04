@@ -15,10 +15,9 @@ DEPENDS += "qcom-camera-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "dcb4b8252b66304545c5efb5cb7c8fecc26b6680"
+SRCREV     = "d9c8bb18dfc2a0f5d78f4a2b4f631349f49b61f0"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-qmmfsrc \
-           file://0001-qtiqmmfsrc-add-support-for-cam-server-system-events.patch"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-qmmfsrc"
 S = "${WORKDIR}/gst-plugin-qmmfsrc"
 
 # Install directries.
@@ -79,11 +78,7 @@ EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
 
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_LICENSE=BSD"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_VERSION=${PV}"
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_PACKAGE=${PN}"
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_SUMMARY="${SUMMARY}""
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_ORIGIN=${HOMEPAGE}"
 
 EXTRA_OECMAKE += "-DGST_IMAGE_MAX_WIDTH=${IMAGE_MAX_WIDTH}"
 EXTRA_OECMAKE += "-DGST_IMAGE_MAX_HEIGHT=${IMAGE_MAX_HEIGHT}"

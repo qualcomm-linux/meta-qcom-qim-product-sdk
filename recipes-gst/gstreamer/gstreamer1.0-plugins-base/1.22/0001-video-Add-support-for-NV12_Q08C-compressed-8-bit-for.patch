@@ -89,24 +89,6 @@ index 7a645ccaab..9a50b3f2e2 100644
  } GstVideoFormat;
 
  #define GST_VIDEO_MAX_PLANES 4
-@@ -877,7 +885,7 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
-     "P010_10BE, P010_10LE, NV12_10LE32, NV12_10LE40, NV12_10BE_8L128, Y444, RGBP, GBR, BGRP, NV24, xBGR, BGRx, " \
-     "xRGB, RGBx, BGR, IYU2, v308, RGB, Y42B, NV61, NV16, VYUY, UYVY, YVYU, YUY2, I420, " \
-     "YV12, NV21, NV12, NV12_8L128, NV12_64Z32, NV12_4L4, NV12_32L32, NV12_16L32S, Y41B, IYU1, YVU9, YUV9, RGB16, " \
--    "BGR16, RGB15, BGR15, RGB8P, GRAY16_BE, GRAY16_LE, GRAY10_LE32, GRAY8 }"
-+    "BGR16, RGB15, BGR15, RGB8P, GRAY16_BE, GRAY16_LE, GRAY10_LE32, GRAY8, NV12_Q08C }"
- #elif G_BYTE_ORDER == G_LITTLE_ENDIAN
- #define GST_VIDEO_FORMATS_ALL "{ ABGR64_LE, BGRA64_LE, AYUV64, ARGB64_LE, ARGB64, " \
-     "RGBA64_LE, ABGR64_BE, BGRA64_BE, ARGB64_BE, RGBA64_BE, GBRA_12LE, GBRA_12BE, Y412_LE, " \
-@@ -890,7 +898,7 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
-     "P010_10LE, NV12_10LE32, NV12_10LE40, P010_10BE, NV12_10BE_8L128, Y444, RGBP, GBR, BGRP, NV24, xBGR, BGRx, " \
-     "xRGB, RGBx, BGR, IYU2, v308, RGB, Y42B, NV61, NV16, VYUY, UYVY, YVYU, YUY2, I420, " \
-     "YV12, NV21, NV12, NV12_8L128, NV12_64Z32, NV12_4L4, NV12_32L32, NV12_16L32S, Y41B, IYU1, YVU9, YUV9, RGB16, " \
--    "BGR16, RGB15, BGR15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE32, GRAY8 }"
-+    "BGR16, RGB15, BGR15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE32, GRAY8, NV12_Q08C }"
- #endif
-
- GST_VIDEO_API
 diff --git a/gst-libs/gst/video/video-info.c b/gst-libs/gst/video/video-info.c
 index d543e31267..d11e4aa63f 100644
 --- a/gst-libs/gst/video/video-info.c

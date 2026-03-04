@@ -1,0 +1,82 @@
+From 8115f779fd23a8667e7f4137926d762824686ba6 Mon Sep 17 00:00:00 2001
+From: Pratik Pachange <ppachang@qti.qualcomm.com>
+Date: Tue, 16 Sep 2025 10:31:52 +0000
+Subject: [PATCH] v4l2: Add support for GST_VIDEO_FORMAT_NV12_Q10LE32C format
+
+Upstream-Status: Inappropriate [Qualcomm Specific]
+
+Signed-off-by: Pratik Pachange <ppachang@qti.qualcomm.com>
+---
+ sys/v4l2/gstv4l2.c       |  4 ++++
+ sys/v4l2/gstv4l2object.c | 12 ++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/sys/v4l2/gstv4l2.c b/sys/v4l2/gstv4l2.c
+index 2d60709..b416a2e 100644
+--- a/sys/v4l2/gstv4l2.c
++++ b/sys/v4l2/gstv4l2.c
+@@ -105,6 +105,10 @@ gst_v4l2_probe_template_caps (const gchar * device, gint video_fd,
+         case V4L2_PIX_FMT_BGR32:
+           alt_t = gst_structure_copy (template);
+           gst_structure_set (alt_t, "format", G_TYPE_STRING, "BGRA", NULL);
++          break;
++        case V4L2_PIX_FMT_QC08C:
++          alt_t = gst_structure_copy (template);
++          gst_structure_set (alt_t, "format", G_TYPE_STRING, "NV12_Q10LE32C", NULL);
+         default:
+           break;
+       }
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index ec9f2a9..84fe708 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -166,6 +166,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
+   {V4L2_PIX_FMT_NV42, TRUE, GST_V4L2_RAW},
+   {V4L2_PIX_FMT_MM21, TRUE, GST_V4L2_RAW},
+   {V4L2_PIX_FMT_QC08C, TRUE, GST_V4L2_RAW},
++  {V4L2_PIX_FMT_QC10C, TRUE, GST_V4L2_RAW},
+ 
+   /* Bayer formats - see http://www.siliconimaging.com/RGB%20Bayer.htm */
+   {V4L2_PIX_FMT_SBGGR8, TRUE, GST_V4L2_RAW},
+@@ -1471,6 +1472,9 @@ gst_v4l2_object_v4l2fourcc_to_video_format (guint32 fourcc)
+     case V4L2_PIX_FMT_QC08C:
+       format = GST_VIDEO_FORMAT_NV12_Q08C;
+       break;
++    case V4L2_PIX_FMT_QC10C:
++      format = GST_VIDEO_FORMAT_NV12_Q10LE32C;
++      break;
+     default:
+       format = GST_VIDEO_FORMAT_UNKNOWN;
+       break;
+@@ -1628,6 +1632,7 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
+     case V4L2_PIX_FMT_NV61M:
+     case V4L2_PIX_FMT_NV24:    /* 24  Y/CrCb 4:4:4  */
+     case V4L2_PIX_FMT_QC08C:
++    case V4L2_PIX_FMT_QC10C:
+     case V4L2_PIX_FMT_YVU410:
+     case V4L2_PIX_FMT_YUV410:
+     case V4L2_PIX_FMT_YUV420:  /* I420/IYUV */
+@@ -2000,6 +2005,9 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+       case GST_VIDEO_FORMAT_NV12_Q08C:
+         fourcc = V4L2_PIX_FMT_QC08C;
+         break;
++      case GST_VIDEO_FORMAT_NV12_Q10LE32C:
++        fourcc = V4L2_PIX_FMT_QC10C;
++        break;
+       case GST_VIDEO_FORMAT_YVYU:
+         fourcc = V4L2_PIX_FMT_YVYU;
+         break;
+@@ -3632,6 +3640,10 @@ gst_v4l2_object_save_format (GstV4l2Object * v4l2object,
+     padded_width = stride;
+   }
+ 
++  /* For Q10C format, padded width should be represented in pixels */
++  if (GST_VIDEO_INFO_FORMAT (info) == GST_VIDEO_FORMAT_NV12_Q10LE32C)
++    padded_width = (padded_width * 3) / 4;
++
+   if (padded_width < format->fmt.pix.width)
+     GST_WARNING_OBJECT (v4l2object->dbg_obj,
+         "Driver bug detected, stride (%d) is too small for the width (%d)",
+-- 
+2.43.0
+

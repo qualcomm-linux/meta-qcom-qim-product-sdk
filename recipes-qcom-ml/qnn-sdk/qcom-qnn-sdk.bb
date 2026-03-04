@@ -47,12 +47,42 @@ do_install() {
 
     cp -r ${QNN_DIR}/include/QNN/* ${D}/${includedir}
     chmod -R 0755 ${D}/${includedir}
+
+    # Install complete QNN_DIR structure to dev package for dependent recipes
+    install -d ${D}${datadir}/qnn-sdk
+    cp -r ${QNN_DIR}/* ${D}${datadir}/qnn-sdk/
+    chmod -R 0755 ${D}${datadir}/qnn-sdk
 }
 
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
+# Inhibit stripping for dev package to avoid errors with non-aarch64 binaries (Hexagon DSP)
+INHIBIT_SYSROOT_STRIP = "1"
+
 INSANE_SKIP_${PN} += "arch"
+INSANE_SKIP:${PN}-dev += "arch already-stripped"
+
+def get_qnn_sdk_libs(d):
+    import os
+
+    destdir = d.getVar('D')
+    datadir = d.getVar('datadir')
+    qnn_sdk_dir = destdir + datadir + '/qnn-sdk/lib'
+
+    if not os.path.exists(qnn_sdk_dir):
+        return ""
+
+    libs = set()
+    for root, dirs, files in os.walk(qnn_sdk_dir):
+        for file in files:
+            if '.so' in file:
+                libs.add(os.path.basename(file))
+
+    return ' '.join(sorted(libs))
+
+# Mark all libraries in qnn-sdk directory as private to avoid shlib provider conflicts
+PRIVATE_LIBS:${PN}-dev = "${@get_qnn_sdk_libs(d)}"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
@@ -60,3 +90,4 @@ FILES_SOLIBSDEV = ""
 FILES:${PN} += "${libdir}/*"
 FILES:${PN} += "${bindir}/*"
 FILES:${PN}-dev += "${includedir}/*"
+FILES:${PN}-dev += "${datadir}/qnn-sdk/*"
