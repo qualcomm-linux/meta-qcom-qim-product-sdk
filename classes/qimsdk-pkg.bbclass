@@ -54,6 +54,7 @@ GST_PLUGINS = " \
     qcom-gstreamer1.0-plugins-oss-vsplit:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-vtransform:do_package_write_ipk \
     qcom-gstreamer1.0-plugins-oss-mlmetaextractor:do_package_write_ipk \
+    qcom-gstreamer1.0-plugins-oss-mlpostprocess:do_package_write_ipk \
   "
 
 GST_PLUGINS:remove:qcs9100 = " \

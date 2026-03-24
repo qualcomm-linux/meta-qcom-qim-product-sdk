@@ -14,7 +14,7 @@ DEPENDS += "json-glib"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "d9c8bb18dfc2a0f5d78f4a2b4f631349f49b61f0"
+SRCREV     = "9b200b0fd6e71b964f9553e61276de5d31c96f69"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-mlmetaparser"
 S = "${WORKDIR}/gst-plugin-mlmetaparser"

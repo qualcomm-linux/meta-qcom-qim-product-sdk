@@ -25,6 +25,7 @@ GST_ML_PLUGINS = " \
         qcom-gstreamer1.0-plugins-oss-mlsnpe:do_package_write_ipk \
         qcom-gstreamer1.0-plugins-oss-mlqnn:do_package_write_ipk \
         qcom-gstreamer1.0-plugins-oss-mltflite:do_package_write_ipk \
+        qcom-gstreamer1.0-plugins-oss-mlonnx:do_package_write_ipk \
     "
 
 addtask do_generate_qim_prod_sdk_setscene
@@ -37,6 +38,9 @@ do_generate_qim_prod_sdk[depends] = " \
          qcom-qim-product-sdk:do_patch \
          qcom-snpe-sdk:do_package_write_ipk \
          qcom-qnn-sdk:do_package_write_ipk \
+         onnx:do_package_write_ipk \
+         onnxruntime:do_package_write_ipk \
+         protobuf:do_package_write_ipk \
          ${GST_ML_PLUGINS} \
          qcom-qim-sdk:do_generate_qim_sdk \
          qcom-tflite-sdk:do_generate_tflite_sdk \
@@ -95,11 +99,10 @@ def get_pkgs_list(d):
     pkgtype = d.getVar("IMAGE_PKGTYPE", True)
     deploydir = d.getVar("DEPLOY_DIR", True)
     pkgslist = []
-    for _, pkgdirs, _ in os.walk(os.path.join(deploydir, pkgtype)):
-        for pkgdir in pkgdirs:
-            for f in os.listdir(os.path.join(deploydir, pkgtype, pkgdir)):
-                if "qnn" in os.path.basename(f) or "snpe" in os.path.basename(f) or "mltflite" in os.path.basename(f):
-                    pkgslist.append(os.path.join(deploydir, pkgtype, pkgdir, f))
+    for dirpath, _, files in os.walk(os.path.join(deploydir, pkgtype)):
+        for f in files:
+            if "qnn" in f or "snpe" in f or "mltflite" in f or "onnx" in f or "libprotobuf-lite" in f:
+                pkgslist.append(os.path.join(dirpath, f))
     return " \\\n ".join(pkgslist)
 
 python do_generate_qim_prod_sdk_setscene() {
