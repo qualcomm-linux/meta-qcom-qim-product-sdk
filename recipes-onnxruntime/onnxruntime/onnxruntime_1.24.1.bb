@@ -43,6 +43,7 @@ EXTRA_OECMAKE=" \
     -Donnxruntime_DISABLE_RTTI=OFF \
 "
 
+do_configure[network] = "1"
 do_compile[network] = "1"
 
 do_install:append() {
