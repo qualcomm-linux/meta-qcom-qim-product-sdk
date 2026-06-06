@@ -13,7 +13,7 @@ DEPENDS += "qcom-gstreamer1.0-plugins-oss-base"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "9b200b0fd6e71b964f9553e61276de5d31c96f69"
+SRCREV     = "0cdf24a99c625fa616564ebf82fd8813c744ed82"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-vtransform"
 S = "${WORKDIR}/gst-plugin-vtransform"

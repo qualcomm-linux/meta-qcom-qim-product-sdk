@@ -59,6 +59,7 @@ RDEPENDS:${PN}:qcom = " \
     qcom-gstreamer1.0-plugins-oss-mlvdetection \
     qcom-gstreamer1.0-plugins-oss-mlvpose \
     qcom-gstreamer1.0-plugins-oss-mlvsegmentation \
+    qcom-gstreamer1.0-plugins-oss-mlbin \
     qcom-gstreamer1.0-plugins-oss-msgbroker \
     qcom-gstreamer1.0-plugins-oss-objtracker \
     qcom-gstreamer1.0-plugins-oss-overlay \
@@ -73,6 +74,7 @@ RDEPENDS:${PN}:qcom = " \
     qcom-gstreamer1.0-plugins-oss-vtransform \
     qcom-gstreamer1.0-plugins-oss-mlmetaextractor \
     qcom-gstreamer1.0-plugins-oss-mlpostprocess \
+    qcom-gstreamer1.0-plugins-oss-sync \
    "
 
 RDEPENDS:${PN}:append:qcom-custom-bsp = " \
@@ -82,4 +84,8 @@ RDEPENDS:${PN}:append:qcom-custom-bsp = " \
     qcom-gstreamer1.0-plugins-oss-qmmfsrc \
     qcom-gstreamer1.0-plugins-oss-smartvencbin \
     qcom-gstreamer1.0-plugins-oss-test-framework \
+   "
+
+RDEPENDS:${PN}:append:qcom-custom-bsp:qcm6490 = " \
+    qcom-gstreamer1.0-plugins-oss-jpegenc \
    "

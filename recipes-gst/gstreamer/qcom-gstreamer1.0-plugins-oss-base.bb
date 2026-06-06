@@ -1,4 +1,4 @@
-inherit cmake pkgconfig
+inherit cmake pkgconfig gobject-introspection
 
 SUMMARY = "Qualcomm open-source GStreamer base"
 SECTION = "multimedia"
@@ -10,14 +10,19 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 DEPENDS := "gstreamer1.0"
 DEPENDS += "gstreamer1.0-plugins-base"
 DEPENDS:append:qcom-custom-bsp = " qcom-fastcv-binaries"
+DEPENDS += "opencv"
 DEPENDS += "virtual/kernel"
 DEPENDS += "virtual/egl"
 DEPENDS += "virtual/libgles2"
 DEPENDS += "json-glib"
+DEPENDS += "python3-pygobject"
 DEPENDS += "qcom-camera-server"
+
+RDEPENDS:${PN} += "opencv"
+
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "9b200b0fd6e71b964f9553e61276de5d31c96f69"
+SRCREV     = "0cdf24a99c625fa616564ebf82fd8813c744ed82"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-base"
 S = "${WORKDIR}/gst-plugin-base"
@@ -26,14 +31,17 @@ S = "${WORKDIR}/gst-plugin-base"
 INSTALL_INCDIR := "${includedir}"
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
+INSTALL_DATADIR := "${datadir}"
 
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
 EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
 EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
-EXTRA_OECMAKE += "-DKERNEL_BUILDDIR=${STAGING_INCDIR}/linux-msm"
+EXTRA_OECMAKE += "-DSYSROOT_BINDIR=${STAGING_BINDIR}"
+EXTRA_OECMAKE += "-DPYTHON_SITEPACKAGES_DIR=${PYTHON_SITEPACKAGES_DIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_INCDIR=${INSTALL_INCDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
+EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_DATADIR=${INSTALL_DATADIR}"
 
 PACKAGECONFIG = "${@bb.utils.contains('PREFERRED_PROVIDER_virtual/libgbm', 'gbm', 'gbm', '', d)} "
 PACKAGECONFIG[gbm] = " , ,gbm,gbm"

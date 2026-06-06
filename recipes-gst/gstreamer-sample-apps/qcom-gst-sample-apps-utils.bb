@@ -12,7 +12,7 @@ DEPENDS += "gstreamer1.0-plugins-base"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "9b200b0fd6e71b964f9553e61276de5d31c96f69"
+SRCREV     = "0cdf24a99c625fa616564ebf82fd8813c744ed82"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-sample-apps-utils"
 S = "${WORKDIR}/gst-sample-apps-utils"
@@ -36,3 +36,5 @@ DEBIANNAME:${PN}-dev = "${PN}-dev"
 DEBIANNAME:${PN}-dbg = "${PN}-dbg"
 DEBIANNAME:${PN}-src = "${PN}-src"
 
+
+EXTRA_OECMAKE:append = " -DENABLE_GST_SAMPLE_APPS=${ENABLE_GST_SAMPLE_APPS}"

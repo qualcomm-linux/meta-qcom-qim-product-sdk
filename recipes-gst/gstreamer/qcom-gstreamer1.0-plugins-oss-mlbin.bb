@@ -1,6 +1,6 @@
 inherit cmake pkgconfig
 
-SUMMARY = "Qualcomm open-source GStreamer Plug-in for video template"
+SUMMARY = "Qualcomm open-source GStreamer Plug-in for simplified Machine Learning"
 SECTION = "multimedia"
 
 LICENSE = "BSD-3-Clause-Clear"
@@ -15,22 +15,20 @@ SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gs
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
 SRCREV     = "0cdf24a99c625fa616564ebf82fd8813c744ed82"
 
-SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-videotemplate"
-S = "${WORKDIR}/gst-plugin-videotemplate"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-plugin-mlbin"
+S = "${WORKDIR}/gst-plugin-mlbin"
 
 
-# Install directries.
+# Install directories.
 INSTALL_BINDIR := "${bindir}"
 INSTALL_LIBDIR := "${libdir}"
 
 EXTRA_OECMAKE += "-DGST_VERSION_REQUIRED=1.20.7"
-EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
-EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
+EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
+EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DKERNEL_BUILDDIR=${STAGING_KERNEL_BUILDDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_BINDIR=${INSTALL_BINDIR}"
 EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_INSTALL_LIBDIR=${INSTALL_LIBDIR}"
-
-EXTRA_OECMAKE += "-DGST_PLUGINS_QTI_OSS_VERSION=${PV}"
 
 FILES:${PN} += "${INSTALL_BINDIR}"
 FILES:${PN} += "${INSTALL_LIBDIR}"
