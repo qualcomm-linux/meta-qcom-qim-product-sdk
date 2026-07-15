@@ -16,7 +16,7 @@ DEPENDS += "qcom-camera-server"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/gst-plugins-qti-oss.git;protocol=https"
 SRCBRANCH  = "imsdk.lnx.2.0.0.r2-rel"
-SRCREV     = "0cdf24a99c625fa616564ebf82fd8813c744ed82"
+SRCREV     = "abe79f81950a3015166b5f6aee97f6e41d018322"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};subpath=gst-sample-apps/gst-rtmp-stream-example"
 S = "${WORKDIR}/gst-rtmp-stream-example"
